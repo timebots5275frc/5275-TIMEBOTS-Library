@@ -1,11 +1,13 @@
 package frc.robot.CustomTypes;
 
+import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.FeedForwardConfig;
+import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
@@ -28,76 +30,56 @@ public class PID {
     private int stallLimit = 20; //Defaults
     private int freeLimit = 20;  //Defaults
 
-    public SparkMaxConfig setSparkMaxPID(SparkMax spm, ResetMode rm, PersistMode pm)
-    {
-      this._rmode=rm;
-      this._pmode=pm;
-      return setPIDBase(spm);
-    }
-    public SparkMaxConfig setSparkMaxPID(SparkMax spm) {return setPIDBase(spm);}
-    public SparkMaxConfig setSparkMaxPID(SparkMax spm, IdleMode im) {
-      this._imode = im;
-      return setPIDBase(spm);
-    }
-    public SparkMaxConfig setSparkMaxPID(SparkMax spm, ResetMode rm, PersistMode pm, IdleMode im)
-    {
-      this._imode=im;
-      this._pmode=pm;
-      this._rmode=rm;
-      return setPIDBase(spm);
-    }
-    public SparkFlexConfig setSparkFlexPID(SparkFlex spm) {return setPIDBaseFlex(spm);}
 
-    public SparkFlexConfig setSparkFlexPID(SparkFlex spm, IdleMode im) {
-      this._imode = im;
-      return setPIDBaseFlex(spm);
+
+    // ---------- Public API: same name, return type follows the motor type ----------
+
+    public SparkMaxConfig setPID(SparkMax motor) {
+        return setPID(motor, null, null, null);
     }
-    public SparkFlexConfig setSparkFlexPID(SparkFlex spm, ResetMode rm, PersistMode pm)
-    {
-      this._rmode=rm;
-      this._pmode=pm;
-      return setPIDBaseFlex(spm);
+    public SparkMaxConfig setPID(SparkMax motor, IdleMode im) {
+        return setPID(motor, null, null, im);
     }
-    public SparkFlexConfig setSparkFlexPID(SparkFlex spm, ResetMode rm, PersistMode pm, IdleMode im)
-    {
-      this._imode=im;
-      this._pmode=pm;
-      this._rmode=rm;
-      return setPIDBaseFlex(spm);
+    public SparkMaxConfig setPID(SparkMax motor, ResetMode rm, PersistMode pm) {
+        return setPID(motor, rm, pm, null);
     }
-    private SparkMaxConfig setPIDBase(SparkMax sp) {
-      ClosedLoopConfig c = new ClosedLoopConfig();
-      FeedForwardConfig fc = new FeedForwardConfig();
-      c.pidf(p,i,d, kS);
-      fc.kV(kV);
-      fc.kS(kS);
-      fc.kA(kA);
-      fc.kG(kG);
-      c.feedForward.apply(fc);
-      SparkMaxConfig sc = new SparkMaxConfig();
-      sc.apply(c);
-      sc.smartCurrentLimit(stallLimit,freeLimit);
-      sc.idleMode( (_imode!= null)?(_imode):(_imode_default) );
-      sp.configure(sc, (_rmode != null)?(_rmode):(_rmode_default), (_pmode!= null)?(_pmode):(_pmode_default));
-      return sc;
+    public SparkMaxConfig setPID(SparkMax motor, ResetMode rm, PersistMode pm, IdleMode im) {
+        return buildAndApply(new SparkMaxConfig(), motor, rm, pm, im);
     }
 
-    private SparkFlexConfig setPIDBaseFlex(SparkFlex sp) {
-      ClosedLoopConfig c = new ClosedLoopConfig();
-      FeedForwardConfig fc = new FeedForwardConfig();
-      c.pidf(p,i,d, kS);
-      fc.kV(kV);
-      fc.kS(kS);
-      fc.kA(kA);
-      fc.kG(kG);
-      c.feedForward.apply(fc);
-      c.iZone(iz);
-      SparkFlexConfig sc = new SparkFlexConfig();
-      sc.smartCurrentLimit(stallLimit,freeLimit);
-      sc.apply(c);
-      sc.idleMode( (_imode!= null)?(_imode):(_imode_default) );
-      sp.configure(sc, (_rmode != null)?(_rmode):(_rmode_default), (_pmode!= null)?(_pmode):(_pmode_default));
-      return sc;
+    public SparkFlexConfig setPID(SparkFlex motor) {
+        return setPID(motor, null, null, null);
+    }
+    public SparkFlexConfig setPID(SparkFlex motor, IdleMode im) {
+        return setPID(motor, null, null, im);
+    }
+    public SparkFlexConfig setPID(SparkFlex motor, ResetMode rm, PersistMode pm) {
+        return setPID(motor, rm, pm, null);
+    }
+    public SparkFlexConfig setPID(SparkFlex motor, ResetMode rm, PersistMode pm, IdleMode im) {
+        return buildAndApply(new SparkFlexConfig(), motor, rm, pm, im);
+    }
+
+
+    private <C extends SparkBaseConfig> C buildAndApply(C sc, SparkBase motor, ResetMode rm, PersistMode pm, IdleMode im) {
+        ClosedLoopConfig c = new ClosedLoopConfig();
+        c.pidf(p, i, d, kS);
+        c.iZone(iz);
+
+        FeedForwardConfig fc = new FeedForwardConfig();
+        fc.kV(kV);
+        fc.kS(kS);
+        fc.kA(kA);
+        fc.kG(kG);
+        c.feedForward.apply(fc);
+
+        sc.apply(c);
+        sc.smartCurrentLimit(stallLimit, freeLimit);
+        sc.idleMode(im != null ? im : _imode_default);
+
+        motor.configure(sc,rm != null ? rm : _rmode_default,pm != null ? pm : _pmode_default);
+
+        return sc;
     }
 
     public void setFreeLimit(int freeLimit) {

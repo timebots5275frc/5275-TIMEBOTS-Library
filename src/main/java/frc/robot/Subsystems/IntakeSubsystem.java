@@ -31,8 +31,8 @@ public class IntakeSubsystem extends StateBasedSubsystem<IntakeSubsystem.IntakeS
 
   /** Creates a new IntakeSubsystem. */
   public IntakeSubsystem() {
-		MotorAndController<SparkMax> m1 = Helpers.InstantiateSparkMax(intakeMotor1, intakeController1, IntakeConstants.MOTOR_1_DATA);
-		MotorAndController<SparkMax> m2 = Helpers.InstantiateSparkMax(intakeMotor2, intakeController2, IntakeConstants.MOTOR_2_DATA);
+		MotorAndController<SparkMax> m1 = Helpers.InstantiateMotor(intakeMotor1, intakeController1, IntakeConstants.MOTOR_1_DATA);
+		MotorAndController<SparkMax> m2 = Helpers.InstantiateMotor(intakeMotor2, intakeController2, IntakeConstants.MOTOR_2_DATA);
 		intakeMotor1 = m1.motor();
 		intakeController1 = m1.motorController();
 		intakeMotor2 = m2.motor();
