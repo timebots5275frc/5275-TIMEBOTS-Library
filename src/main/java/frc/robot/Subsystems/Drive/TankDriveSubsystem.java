@@ -60,21 +60,11 @@ public class TankDriveSubsystem extends SubsystemBase {
     rightLeaderMotor = rightLeader.motor();
     rightMotorController = rightLeader.motorController();
 
-    //TODO instantiate followers; make sure to be following
-
+    //left follower
+    leftFollowerMotor = Helpers.InstantiateFollowerMotor(leftFollowerMotor, leftLeaderMotor, DriveConstants.LEFT_FOLLOWER_DATA);
     
-
-    //Followers
-    leftFollowerMotor = new SparkMax(Constants.DriveConstants.LEFT_FOLLOWER_ID, SparkLowLevel.MotorType.kBrushless);
-    SparkMaxConfig config1 = Constants.DriveConstants.DRIVE_PID.setSparkMaxPID(leftLeaderMotor, IdleMode.kCoast);
-    config1.follow(leftLeaderMotor, false); 
-    leftFollowerMotor.configure(config1, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-    rightFollowerMotor = new SparkMax(Constants.DriveConstants.RIGHT_FOLLOWER_ID, SparkLowLevel.MotorType.kBrushless);
-    SparkMaxConfig config2 = Constants.DriveConstants.DRIVE_PID.setSparkMaxPID(rightLeaderMotor, IdleMode.kCoast);
-    config2.follow(rightLeaderMotor, false); 
-    rightFollowerMotor.configure(config2, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
+    //right follower
+    rightFollowerMotor = Helpers.InstantiateFollowerMotor(rightFollowerMotor, rightLeaderMotor, DriveConstants.RIGHT_FOLLOWER_DATA);
   }
 
   /**
@@ -156,8 +146,8 @@ public class TankDriveSubsystem extends SubsystemBase {
     PID pid = new PID(p, i, d, kS);
     pid.setStallLimit(DriveConstants.DRIVE_STALL_LIMIT);
     pid.setFreeLimit(DriveConstants.DRIVE_FREE_LIMIT);
-    pid.setSparkMaxPID(leftLeaderMotor);  
-    pid.setSparkMaxPID(rightLeaderMotor);
+    pid.setPID(leftLeaderMotor);  
+    pid.setPID(rightLeaderMotor);
     DriveConstants.DRIVE_PID = pid;
   }
 
