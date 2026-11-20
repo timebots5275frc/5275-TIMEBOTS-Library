@@ -7,6 +7,10 @@ package frc.robot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.Commands.SetState;
+import frc.robot.Subsystems.IntakeSubsystem;
+import frc.robot.Subsystems.IntakeSubsystem.IntakeState;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -17,11 +21,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
 
+  IntakeSubsystem intakeSubsystem;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer(SendableChooser<Command> autonChooser) {
 
     SmartDashboard.putData(autonChooser);
+
+    intakeSubsystem = new IntakeSubsystem();
 
     // Configure the trigger bindings
     configureBindings();
@@ -38,6 +45,7 @@ public class RobotContainer {
    */
   private void configureBindings() {
 
+    new JoystickButton(null, 0).onTrue(new SetState<IntakeState>(intakeSubsystem, IntakeState.INTAKE));
 
 
   }
