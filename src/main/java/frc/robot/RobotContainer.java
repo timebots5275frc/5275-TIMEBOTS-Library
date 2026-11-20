@@ -25,9 +25,9 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer(SendableChooser<Command> autonChooser) {
-
     SmartDashboard.putData(autonChooser);
 
+    //Instantiate Subsystems here
     intakeSubsystem = new IntakeSubsystem();
 
     // Configure the trigger bindings
@@ -45,6 +45,7 @@ public class RobotContainer {
    */
   private void configureBindings() {
 
+    //creates a new button
     new JoystickButton(null, 0).onTrue(new SetState<IntakeState>(intakeSubsystem, IntakeState.INTAKE));
 
 

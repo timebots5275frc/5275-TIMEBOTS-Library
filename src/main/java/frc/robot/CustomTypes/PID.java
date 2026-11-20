@@ -31,9 +31,6 @@ public class PID {
     private int freeLimit = 20;  //Defaults
 
 
-
-    // ---------- Public API: same name, return type follows the motor type ----------
-
     public SparkMaxConfig setPID(SparkMax motor) {
         return setPID(motor, null, null, null);
     }
@@ -82,6 +79,7 @@ public class PID {
         return sc;
     }
 
+    //these 2 must be called before setPID to actually have an effect
     public void setFreeLimit(int freeLimit) {
       this.freeLimit = freeLimit;
     }

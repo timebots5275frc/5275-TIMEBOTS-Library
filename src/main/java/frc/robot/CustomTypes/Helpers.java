@@ -15,7 +15,7 @@ import frc.robot.Constants.MotorData;
 
 
 public class Helpers {
-    
+    //define an object that contains the motor and its controller, to allow for both to be returned from functions at the same time
     public record MotorAndController<MotorType>(MotorType motor, SparkClosedLoopController motorController){};
 
 
@@ -30,13 +30,13 @@ public class Helpers {
      */
     public static MotorAndController<SparkMax> InstantiateMotor(SparkMax motor, SparkClosedLoopController motorController, MotorData motorData) {
 
-        motor = new SparkMax(motorData.ID(),SparkLowLevel.MotorType.kBrushless);
-        motorData.pid().setFreeLimit(motorData.FREE_LIMIT());
-        motorData.pid().setStallLimit(motorData.STALL_LIMIT());
-        motorData.pid().setPID(motor,ResetMode.kResetSafeParameters,PersistMode.kPersistParameters);
-        motorController = motor.getClosedLoopController();
+        motor = new SparkMax(motorData.ID(),SparkLowLevel.MotorType.kBrushless);//instantiate motor
+        motorData.pid().setFreeLimit(motorData.FREE_LIMIT());//set free limit
+        motorData.pid().setStallLimit(motorData.STALL_LIMIT());//set stall limit
+        motorData.pid().setPID(motor,ResetMode.kResetSafeParameters,PersistMode.kPersistParameters);//set the PID
+        motorController = motor.getClosedLoopController();//set the controller
 
-        return new MotorAndController<SparkMax>(motor, motorController);
+        return new MotorAndController<SparkMax>(motor, motorController);//return the motor + controller
     }
 
     /**
