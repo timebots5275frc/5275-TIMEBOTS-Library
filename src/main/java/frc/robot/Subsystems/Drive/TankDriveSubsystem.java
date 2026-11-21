@@ -7,15 +7,11 @@ package frc.robot.Subsystems.Drive;
 
 
 import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkLowLevel;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkMaxConfig;
 
+import java.util.HashMap;
+
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -23,8 +19,10 @@ import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.MathConstants;
 import frc.robot.CustomTypes.Helpers;
+import frc.robot.CustomTypes.MotorAndController;
+import frc.robot.CustomTypes.MotorData;
 import frc.robot.CustomTypes.PID;
-import frc.robot.CustomTypes.Helpers.MotorAndController;
+
 
 public class TankDriveSubsystem extends SubsystemBase {
 
@@ -37,7 +35,7 @@ public class TankDriveSubsystem extends SubsystemBase {
     private SparkClosedLoopController leftMotorController;
     private SparkClosedLoopController rightMotorController;
 
-    
+    private HashMap<MotorAndController<SparkMax>,MotorData> motor_controller_data = new HashMap<MotorAndController<SparkMax>,MotorData>();
 
   /** Creates a new TankDriveSubsystem. */
   public TankDriveSubsystem() {
@@ -52,19 +50,22 @@ public class TankDriveSubsystem extends SubsystemBase {
     
     //left leader
     MotorAndController<SparkMax> leftLeader = Helpers.InstantiateMotor(leftLeaderMotor, leftMotorController, DriveConstants.LEFT_LEADER_DATA);
-    leftLeaderMotor = leftLeader.motor();
-    leftMotorController = leftLeader.motorController();
+    leftLeaderMotor = leftLeader.getMotor();
+    leftMotorController = leftLeader.getMotorController();
 
     //right leader
     MotorAndController<SparkMax> rightLeader = Helpers.InstantiateMotor(rightLeaderMotor, rightMotorController, DriveConstants.LEFT_LEADER_DATA);
-    rightLeaderMotor = rightLeader.motor();
-    rightMotorController = rightLeader.motorController();
+    rightLeaderMotor = rightLeader.getMotor();
+    rightMotorController = rightLeader.getMotorController();
 
     //left follower
     leftFollowerMotor = Helpers.InstantiateFollowerMotor(leftFollowerMotor, leftLeaderMotor, DriveConstants.LEFT_FOLLOWER_DATA);
     
     //right follower
     rightFollowerMotor = Helpers.InstantiateFollowerMotor(rightFollowerMotor, rightLeaderMotor, DriveConstants.RIGHT_FOLLOWER_DATA);
+
+    motor_controller_data.put(rightLeader, DriveConstants.LEFT_LEADER_DATA);
+    motor_controller_data.put(leftLeader, DriveConstants.RIGHT_LEADER_DATA);
   }
 
   /**
@@ -77,7 +78,7 @@ public class TankDriveSubsystem extends SubsystemBase {
     public void arcadeDrive(double xSpeed, double zRotation) {
 
 
-      zRotation *= -1;
+      zRotation *= -1; // reverse rotation
 
 
       xSpeed = Math.min(xSpeed, Constants.DriveConstants.MAX_X_SPEED);
@@ -125,53 +126,17 @@ public class TankDriveSubsystem extends SubsystemBase {
       rightMotorController.setSetpoint(rightRPM * DriveConstants.FORWARD, ControlType.kVelocity);
   }
 
-  private void pushPIDToSmartDashboard() {
-    PID pid = DriveConstants.DRIVE_PID;
-    SmartDashboard.putNumber("Drive/P", pid.p);
-    SmartDashboard.putNumber("Drive/I", pid.i);
-    SmartDashboard.putNumber("Drive/D", pid.d);
-    SmartDashboard.putNumber("Drive/kS", pid.kS);
-  }
-
-  private void setPID(double p, double i, double d, double kS) {
-
-
-    if (Math.abs(p  - DriveConstants.DRIVE_PID.p)  < MathConstants.EPSILON &&
-      Math.abs(i  - DriveConstants.DRIVE_PID.i)  <  MathConstants.EPSILON &&
-      Math.abs(d  - DriveConstants.DRIVE_PID.d)  <  MathConstants.EPSILON &&
-      Math.abs(kS - DriveConstants.DRIVE_PID.kS) <  MathConstants.EPSILON) {
-      return; // return if there is no meaningful change in PID
-    }
- 
-    PID pid = new PID(p, i, d, kS);
-    pid.setStallLimit(DriveConstants.DRIVE_STALL_LIMIT);
-    pid.setFreeLimit(DriveConstants.DRIVE_FREE_LIMIT);
-    pid.setPID(leftLeaderMotor);  
-    pid.setPID(rightLeaderMotor);
-    DriveConstants.DRIVE_PID = pid;
-  }
-
-  private void updatePID() {
-    double p  = SmartDashboard.getNumber("Drive/P",  DriveConstants.DRIVE_PID.p);
-    double i  = SmartDashboard.getNumber("Drive/I",  DriveConstants.DRIVE_PID.i);
-    double d  = SmartDashboard.getNumber("Drive/D",  DriveConstants.DRIVE_PID.d);
-    double kS = SmartDashboard.getNumber("Drive/kS", DriveConstants.DRIVE_PID.kS);
-
-    
-    setPID(p, i, d, kS);
-  }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+
+    //put motor velo data
     SmartDashboard.putNumber("right rpm", rightLeaderMotor.getEncoder().getVelocity());
     SmartDashboard.putNumber("left rpm", leftLeaderMotor.getEncoder().getVelocity());
 
-    if (RobotState.isTest()) {
-      updatePID();
-      pushPIDToSmartDashboard();
-      
-    }
+    DriveConstants.DRIVE_PID.updateLivePIDMax(motor_controller_data);
+    
   }
 
   public void clearIAccum() {

@@ -11,6 +11,8 @@
 
 package frc.robot.Subsystems;
 
+import java.util.HashMap;
+
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.SparkMax;
@@ -20,8 +22,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.CustomTypes.Helpers;
+import frc.robot.CustomTypes.MotorAndController;
+import frc.robot.CustomTypes.MotorData;
 import frc.robot.CustomTypes.StateBasedSubsystem;
-import frc.robot.CustomTypes.Helpers.MotorAndController;
+
 
 //Extends StateBasedSubsystem, because it operates on states, as described by the enum; pass the enum type, IntakeState, into the <>
 public class IntakeSubsystem extends StateBasedSubsystem<IntakeSubsystem.IntakeState> {
@@ -40,6 +44,12 @@ public class IntakeSubsystem extends StateBasedSubsystem<IntakeSubsystem.IntakeS
   private SparkMax intakeMotor2; 
   private SparkClosedLoopController intakeController2;
 
+  //create hashmap 
+	private HashMap<MotorAndController<SparkMax>,MotorData> motor_controller_data_1 = new HashMap<MotorAndController<SparkMax>,MotorData>();
+  	private HashMap<MotorAndController<SparkMax>,MotorData> motor_controller_data_2 = new HashMap<MotorAndController<SparkMax>,MotorData>();
+	
+	
+
   /** Creates a new IntakeSubsystem. */
   public IntakeSubsystem() {
 
@@ -49,11 +59,14 @@ public class IntakeSubsystem extends StateBasedSubsystem<IntakeSubsystem.IntakeS
 	MotorAndController<SparkMax> m2 = Helpers.InstantiateMotor(intakeMotor2, intakeController2, IntakeConstants.MOTOR_2_DATA);
 
 	//set values for motor 1 and controller 1
-	intakeMotor1 = m1.motor();
-	intakeController1 = m1.motorController();
+	intakeMotor1 = m1.getMotor();
+	intakeController1 = m1.getMotorController();
 	//set values for motor 2 and controller 2
-	intakeMotor2 = m2.motor();
-	intakeController2 = m2.motorController();
+	intakeMotor2 = m2.getMotor();
+	intakeController2 = m2.getMotorController();
+
+	motor_controller_data_1.put(m1, IntakeConstants.MOTOR_1_DATA);
+	motor_controller_data_2.put(m2, IntakeConstants.MOTOR_2_DATA);
   }
 
 	@Override
@@ -88,11 +101,10 @@ public class IntakeSubsystem extends StateBasedSubsystem<IntakeSubsystem.IntakeS
 	//Log motor 2 data
     SmartDashboard.putNumber("Intake Motor 2 RPM", intakeMotor2.getEncoder().getVelocity());
 	SmartDashboard.putNumber("Intake Motor 2 Current", intakeMotor2.getOutputCurrent());
-
-
+	
+	//update live pid
+	IntakeConstants.MOTOR_1_DATA.getPID().updateLivePIDMax(motor_controller_data_1);
+	IntakeConstants.MOTOR_2_DATA.getPID().updateLivePIDMax(motor_controller_data_2);
   }
-
-
-
 
 }

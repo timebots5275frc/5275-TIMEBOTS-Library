@@ -1,5 +1,7 @@
 package frc.robot.CustomTypes;
 
+import java.util.HashMap;
+
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -9,6 +11,13 @@ import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.FeedForwardConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
+
+import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.MathConstants;
+
+
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 
@@ -86,4 +95,82 @@ public class PID {
      public void setStallLimit(int stallLimit) {
       this.stallLimit = stallLimit;
     }
+
+
+    //#region LIVE PID TUNING
+    private void pushPIDToSmartDashboard() {
+        PID pid = DriveConstants.DRIVE_PID;
+        SmartDashboard.putNumber("Drive/P", pid.p);
+        SmartDashboard.putNumber("Drive/I", pid.i);
+        SmartDashboard.putNumber("Drive/D", pid.d);
+        SmartDashboard.putNumber("Drive/kS", pid.kS);
+    }
+
+
+  /**
+   * call every periodic
+   * puts PID data on smartdashboard in a way to allow for that numbers to be changed in test mode
+   * changes PID and updates the motor(s) of the pid when changed
+   * @param data - a Hashmap of a MotorAndController of SparkMax type, a set of a motor and a controller, and motordata
+   */
+  public void updateLivePIDMax(HashMap<MotorAndController<SparkMax>, MotorData> data) {
+    if (!RobotState.isTest()) return; // dont do anything if not in test mode
+    pushPIDToSmartDashboard();
+    //get the data from smartDashboard
+    double p  = SmartDashboard.getNumber("Drive/P",  DriveConstants.DRIVE_PID.p);
+    double i  = SmartDashboard.getNumber("Drive/I",  DriveConstants.DRIVE_PID.i);
+    double d  = SmartDashboard.getNumber("Drive/D",  DriveConstants.DRIVE_PID.d);
+    double kS = SmartDashboard.getNumber("Drive/kS", DriveConstants.DRIVE_PID.kS);
+
+    if (Math.abs(p  - DriveConstants.DRIVE_PID.p)  < MathConstants.EPSILON &&
+      Math.abs(i  - DriveConstants.DRIVE_PID.i)  <  MathConstants.EPSILON &&
+      Math.abs(d  - DriveConstants.DRIVE_PID.d)  <  MathConstants.EPSILON &&
+      Math.abs(kS - DriveConstants.DRIVE_PID.kS) <  MathConstants.EPSILON) {
+      return; // return if there is no meaningful change in PID
+    }
+    //set values
+    this.p = p;
+    this.i = i;
+    this.d = d;
+    this.kS = kS;
+    // update each motor and controller
+    for (MotorAndController<SparkMax> motorAndController: data.keySet()) {
+        motorAndController = Helpers.InstantiateMotor(motorAndController.getMotor(), motorAndController.getMotorController(), data.get(motorAndController));
+        
+    }
+  }
+
+  /**
+   * call every periodic
+   * puts PID data on smartdashboard in a way to allow for that numbers to be changed in test mode
+   * changes PID and updates the motor(s) of the pid when changed
+   * @param data - a Hashmap of a MotorAndController of sparkFlex Type, a set of a motor and a controller, and motordata
+   */
+  public void updateLivePIDFlex(HashMap<MotorAndController<SparkFlex>, MotorData> data) {
+    if (!RobotState.isTest()) return; // dont do anything if not in test mode
+    pushPIDToSmartDashboard();
+    //get the data from smartDashboard
+    double p  = SmartDashboard.getNumber("Drive/P",  DriveConstants.DRIVE_PID.p);
+    double i  = SmartDashboard.getNumber("Drive/I",  DriveConstants.DRIVE_PID.i);
+    double d  = SmartDashboard.getNumber("Drive/D",  DriveConstants.DRIVE_PID.d);
+    double kS = SmartDashboard.getNumber("Drive/kS", DriveConstants.DRIVE_PID.kS);
+
+    if (Math.abs(p  - DriveConstants.DRIVE_PID.p)  < MathConstants.EPSILON &&
+      Math.abs(i  - DriveConstants.DRIVE_PID.i)  <  MathConstants.EPSILON &&
+      Math.abs(d  - DriveConstants.DRIVE_PID.d)  <  MathConstants.EPSILON &&
+      Math.abs(kS - DriveConstants.DRIVE_PID.kS) <  MathConstants.EPSILON) {
+      return; // return if there is no meaningful change in PID
+    }
+    //set values
+    this.p = p;
+    this.i = i;
+    this.d = d;
+    this.kS = kS;
+    // update each motor and controller
+    for (MotorAndController<SparkFlex> motorAndController: data.keySet()) {
+        motorAndController = Helpers.InstantiateMotor(motorAndController.getMotor(), motorAndController.getMotorController(), data.get(motorAndController));
+        
+    }
+  }
+
 }

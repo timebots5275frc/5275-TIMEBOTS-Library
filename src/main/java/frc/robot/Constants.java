@@ -1,10 +1,9 @@
 package frc.robot;
 
+import frc.robot.CustomTypes.MotorData;
 import frc.robot.CustomTypes.PID;
 
 public class Constants {
-    public record MotorData(int ID, int FREE_LIMIT, int STALL_LIMIT, PID pid){} // defines all constants with a motor
-
     /*
      * where all constants for the Intake Subsystem should be defined
      */
