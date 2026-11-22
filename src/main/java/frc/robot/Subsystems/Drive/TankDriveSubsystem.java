@@ -26,16 +26,16 @@ import frc.robot.CustomTypes.PID;
 
 public class TankDriveSubsystem extends SubsystemBase {
 
-    private SparkMax leftLeaderMotor;
-    private SparkMax rightLeaderMotor;
+  private SparkMax leftLeaderMotor;
+  private SparkMax rightLeaderMotor;
 
-    private SparkMax leftFollowerMotor;
-    private SparkMax rightFollowerMotor;
+  private SparkMax leftFollowerMotor;
+  private SparkMax rightFollowerMotor;
 
-    private SparkClosedLoopController leftMotorController;
-    private SparkClosedLoopController rightMotorController;
+  private SparkClosedLoopController leftMotorController;
+  private SparkClosedLoopController rightMotorController;
 
-    private HashMap<MotorAndController<SparkMax>,MotorData> motor_controller_data = new HashMap<MotorAndController<SparkMax>,MotorData>();
+  
 
   /** Creates a new TankDriveSubsystem. */
   public TankDriveSubsystem() {
@@ -43,29 +43,19 @@ public class TankDriveSubsystem extends SubsystemBase {
   }
 
   private void initMotors() {
-
-    //set limits
-    DriveConstants.DRIVE_PID.setFreeLimit(DriveConstants.DRIVE_FREE_LIMIT);
-    DriveConstants.DRIVE_PID.setStallLimit(DriveConstants.DRIVE_STALL_LIMIT);
-    
-    //left leader
-    MotorAndController<SparkMax> leftLeader = Helpers.InstantiateMotor(leftLeaderMotor, leftMotorController, DriveConstants.LEFT_LEADER_DATA);
+    //instantaite leaders
+    var leftLeader  = Helpers.InstantiateMax(DriveConstants.LEFT_LEADER_DATA);
+    var rightLeader = Helpers.InstantiateMax(DriveConstants.RIGHT_LEADER_DATA); 
+    //set values
     leftLeaderMotor = leftLeader.getMotor();
     leftMotorController = leftLeader.getMotorController();
-
-    //right leader
-    MotorAndController<SparkMax> rightLeader = Helpers.InstantiateMotor(rightLeaderMotor, rightMotorController, DriveConstants.LEFT_LEADER_DATA);
     rightLeaderMotor = rightLeader.getMotor();
     rightMotorController = rightLeader.getMotorController();
+    // instantiate followers
+    leftFollowerMotor  = Helpers.InstantiateFollowerMax(DriveConstants.LEFT_FOLLOWER_DATA, leftLeaderMotor);
+    rightFollowerMotor = Helpers.InstantiateFollowerMax(DriveConstants.RIGHT_FOLLOWER_DATA, rightLeaderMotor);
 
-    //left follower
-    leftFollowerMotor = Helpers.InstantiateFollowerMotor(leftFollowerMotor, leftLeaderMotor, DriveConstants.LEFT_FOLLOWER_DATA);
-    
-    //right follower
-    rightFollowerMotor = Helpers.InstantiateFollowerMotor(rightFollowerMotor, rightLeaderMotor, DriveConstants.RIGHT_FOLLOWER_DATA);
-
-    motor_controller_data.put(rightLeader, DriveConstants.LEFT_LEADER_DATA);
-    motor_controller_data.put(leftLeader, DriveConstants.RIGHT_LEADER_DATA);
+    DriveConstants.DRIVE_PID.tunable("Drive", leftLeaderMotor, rightLeaderMotor);
   }
 
   /**
@@ -135,7 +125,7 @@ public class TankDriveSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("right rpm", rightLeaderMotor.getEncoder().getVelocity());
     SmartDashboard.putNumber("left rpm", leftLeaderMotor.getEncoder().getVelocity());
 
-    DriveConstants.DRIVE_PID.updateLivePIDMax(motor_controller_data);
+    DriveConstants.DRIVE_PID.updateLive();
     
   }
 

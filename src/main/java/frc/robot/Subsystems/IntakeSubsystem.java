@@ -20,6 +20,7 @@ import com.revrobotics.spark.SparkBase.ControlType;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.CustomTypes.Helpers;
 import frc.robot.CustomTypes.MotorAndController;
@@ -44,19 +45,13 @@ public class IntakeSubsystem extends StateBasedSubsystem<IntakeSubsystem.IntakeS
   private SparkMax intakeMotor2; 
   private SparkClosedLoopController intakeController2;
 
-  //create hashmap 
-	private HashMap<MotorAndController<SparkMax>,MotorData> motor_controller_data_1 = new HashMap<MotorAndController<SparkMax>,MotorData>();
-  	private HashMap<MotorAndController<SparkMax>,MotorData> motor_controller_data_2 = new HashMap<MotorAndController<SparkMax>,MotorData>();
-	
-	
-
   /** Creates a new IntakeSubsystem. */
   public IntakeSubsystem() {
 
 	//get a set with the motor and controller for motor 1
-	MotorAndController<SparkMax> m1 = Helpers.InstantiateMotor(intakeMotor1, intakeController1, IntakeConstants.MOTOR_1_DATA);
+	MotorAndController<SparkMax> m1 = Helpers.InstantiateMax(IntakeConstants.MOTOR_1_DATA);
 	//get a set with the motor and controller for motor 2
-	MotorAndController<SparkMax> m2 = Helpers.InstantiateMotor(intakeMotor2, intakeController2, IntakeConstants.MOTOR_2_DATA);
+	MotorAndController<SparkMax> m2 = Helpers.InstantiateMax(IntakeConstants.MOTOR_2_DATA);
 
 	//set values for motor 1 and controller 1
 	intakeMotor1 = m1.getMotor();
@@ -65,8 +60,9 @@ public class IntakeSubsystem extends StateBasedSubsystem<IntakeSubsystem.IntakeS
 	intakeMotor2 = m2.getMotor();
 	intakeController2 = m2.getMotorController();
 
-	motor_controller_data_1.put(m1, IntakeConstants.MOTOR_1_DATA);
-	motor_controller_data_2.put(m2, IntakeConstants.MOTOR_2_DATA);
+	IntakeConstants.MOTOR_1_DATA.getPID().tunable("Intake 1", intakeMotor1);
+	IntakeConstants.MOTOR_2_DATA.getPID().tunable("Intake 2", intakeMotor2);
+
   }
 
 	@Override
@@ -75,16 +71,16 @@ public class IntakeSubsystem extends StateBasedSubsystem<IntakeSubsystem.IntakeS
 
 		switch (state) {//based on state, set motor speeds
 			case INTAKE://both motors run forward at intake speed
-				intakeController1.setReference(IntakeConstants.INTAKE_SPEED, ControlType.kVelocity);
-				intakeController2.setReference(IntakeConstants.INTAKE_SPEED, ControlType.kVelocity);
+				intakeController1.setSetpoint(IntakeConstants.INTAKE_SPEED, ControlType.kVelocity);
+				intakeController2.setSetpoint(IntakeConstants.INTAKE_SPEED, ControlType.kVelocity);
 				break;
 			case NONE://both motors get 0 Current; IMPORTANT to use kCurrent
-				intakeController1.setReference(0, ControlType.kCurrent);
-				intakeController2.setReference(0, ControlType.kCurrent);
+				intakeController1.setSetpoint(0, ControlType.kCurrent);
+				intakeController2.setSetpoint(0, ControlType.kCurrent);
 				break;
 			case OUTTAKE://Both motors spin backwards
-				intakeController1.setReference(-IntakeConstants.INTAKE_SPEED, ControlType.kVelocity);
-				intakeController2.setReference(-IntakeConstants.INTAKE_SPEED, ControlType.kVelocity);
+				intakeController1.setSetpoint(-IntakeConstants.INTAKE_SPEED, ControlType.kVelocity);
+				intakeController2.setSetpoint(-IntakeConstants.INTAKE_SPEED, ControlType.kVelocity);
 				break;
 		}
 	}
@@ -103,8 +99,8 @@ public class IntakeSubsystem extends StateBasedSubsystem<IntakeSubsystem.IntakeS
 	SmartDashboard.putNumber("Intake Motor 2 Current", intakeMotor2.getOutputCurrent());
 	
 	//update live pid
-	IntakeConstants.MOTOR_1_DATA.getPID().updateLivePIDMax(motor_controller_data_1);
-	IntakeConstants.MOTOR_2_DATA.getPID().updateLivePIDMax(motor_controller_data_2);
+	IntakeConstants.MOTOR_1_DATA.getPID().updateLive();
+	IntakeConstants.MOTOR_2_DATA.getPID().updateLive();
   }
 
 }
