@@ -55,6 +55,7 @@ public class TankDriveSubsystem extends SubsystemBase {
     leftFollowerMotor  = Helpers.InstantiateFollowerMax(DriveConstants.LEFT_FOLLOWER_DATA, leftLeaderMotor);
     rightFollowerMotor = Helpers.InstantiateFollowerMax(DriveConstants.RIGHT_FOLLOWER_DATA, rightLeaderMotor);
 
+    //make tunable
     DriveConstants.DRIVE_PID.tunable("Drive", leftLeaderMotor, rightLeaderMotor);
   }
 
@@ -67,21 +68,23 @@ public class TankDriveSubsystem extends SubsystemBase {
    */
     public void arcadeDrive(double xSpeed, double zRotation) {
 
-
       zRotation *= -1; // reverse rotation
 
-
+      //limit x speeds
       xSpeed = Math.min(xSpeed, Constants.DriveConstants.MAX_X_SPEED);
       xSpeed = Math.max(xSpeed, -Constants.DriveConstants.MAX_X_SPEED);
-
+      //limit z speeds
       zRotation = Math.min(zRotation, Constants.DriveConstants.MAX_Z_ROTATION);
       zRotation = Math.max(zRotation, -Constants.DriveConstants.MAX_Z_ROTATION);
 
+      //convert z rotation to meters per second
       double zRotationMetersPerSecond = (Math.toRadians(zRotation) * (Constants.DriveConstants.TRACK_WIDTH / 2)) * -1;
 
+      //calculate left and right speeds
       double leftSpeed = xSpeed - zRotationMetersPerSecond;
       double rightSpeed = xSpeed + zRotationMetersPerSecond;
 
+      //saturate speeds if needed
       double greaterInput = Math.max(Math.abs(xSpeed), Math.abs(zRotationMetersPerSecond));
       double lesserInput = Math.min(Math.abs(xSpeed), Math.abs(zRotationMetersPerSecond));
       if (greaterInput == 0.0) {
@@ -93,6 +96,7 @@ public class TankDriveSubsystem extends SubsystemBase {
         rightSpeed /= saturatedInput;
       }
       
+      //drive the wheels
       wheelDrive(leftSpeed, rightSpeed * -1);
     }
 
@@ -100,17 +104,11 @@ public class TankDriveSubsystem extends SubsystemBase {
  * meters per second
  */
   private void wheelDrive(double leftSpeed, double rightSpeed) {
-      //60 - converts seconds to minutes;
-      //(Math.PI * Constants.DriveConstants.WHEEL_DIAMETER)) gets the wheel circumfrence, otherwise meters per rotation
-      //divide by the gear ratio to convert to wheel rotations
-
-      double conversionFactor = (60 / (Math.PI * DriveConstants.WHEEL_DIAMETER)) * Constants.DriveConstants.GEAR_RATIO;
-
-      double leftRPM = leftSpeed * conversionFactor;
-      double rightRPM = rightSpeed * conversionFactor;
+      double leftRPM = leftSpeed * DriveConstants.CONVERSION_FACTOR;
+      double rightRPM = rightSpeed * DriveConstants.CONVERSION_FACTOR;
 
       SmartDashboard.putNumber("right rpm goal", rightRPM);
-     SmartDashboard.putNumber("left rpm goal", leftRPM);
+      SmartDashboard.putNumber("left rpm goal", leftRPM);
 
       leftMotorController.setSetpoint(leftRPM * DriveConstants.FORWARD, ControlType.kVelocity);
       rightMotorController.setSetpoint(rightRPM * DriveConstants.FORWARD, ControlType.kVelocity);

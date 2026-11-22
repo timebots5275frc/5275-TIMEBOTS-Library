@@ -27,18 +27,19 @@ import frc.robot.Constants.MathConstants;
  */
 public class PID {
     public double p, i, d, kS, kV, kA, kG, iz;
-
-    public PID(double p, double i, double d, double kS) {this.p=p; this.i=i; this.d=d; this.kS=kS;}
-    public PID(double p, double i, double d, double iz, double kS) {this.p=p; this.i=i; this.d=d; this.iz=iz; this.kS=kS;}
-    public PID(double p, double i, double d, double kS, double kV, double kA, double kG) {
-        this.p=p; this.i=i; this.d=d; this.kS=kS; this.kV=kV; this.kA=kA; this.kG=kG;
-    }
+    // build constructors for all combinations of parameters, with defaults for the rest
     public PID() {this(0,0,0,0);}
     public PID(double p, double i, double d) {this(p,i,d,0);}
-    /** Full copy (the old version silently dropped kS, kV, kA, kG and iz). */
+    public PID(double p, double i, double d, double kS) {this.p=p; this.i=i; this.d=d; this.kS=kS;}
+    public PID(double p, double i, double d, double iz, double kS) {this.p=p; this.i=i; this.d=d; this.iz=iz; this.kS=kS;}
+    public PID(double p, double i, double d, double kS, double kV, double kA, double kG) {this.p=p; this.i=i; this.d=d; this.kS=kS; this.kV=kV; this.kA=kA; this.kG=kG;}
+    /** copy from other pid */
     public PID(PID c) {this.p=c.p; this.i=c.i; this.d=c.d; this.kS=c.kS; this.kV=c.kV; this.kA=c.kA; this.kG=c.kG; this.iz=c.iz;}
 
-    /** Writes these gains into a config. Does not touch any motor. */
+    /** Writes these gains into a config. Does not touch any motor.
+     * @param sc the config to apply the gains to
+     * @return the config with the gains applied
+     */
     public <C extends SparkBaseConfig> C applyTo(C sc) {
         ClosedLoopConfig c = new ClosedLoopConfig();
         c.pid(p, i, d);
@@ -73,8 +74,9 @@ public class PID {
 
     private String key(String field) {return "Tuning/" + tuneName + "/" + field;}
 
-    // Published ONCE. (The old code re-published every loop, which overwrote whatever you typed
-    // before it was read, so a change could never be detected.)
+    /**
+     * publish ONCE
+     */
     private void publish() {
         SmartDashboard.putNumber(key("P"), p);
         SmartDashboard.putNumber(key("I"), i);
@@ -84,12 +86,19 @@ public class PID {
         SmartDashboard.putNumber(key("IZone"), iz);
     }
 
+    /**
+     * Returns true if the two values are different enough to be considered changed.
+     * @param a
+     * @param b
+     * @return
+     */
     private static boolean changed(double a, double b) {return Math.abs(a - b) >= MathConstants.EPSILON;}
 
-    /** Call every periodic. Does nothing unless in Test mode and a value was edited. */
+    /** Call every periodic. Does nothing unless in Test mode and a value was edited. tunable() must have been called before */
     public void updateLive() {
-        if (tuneName == null || !RobotState.isTest()) return;
+        if (tuneName == null || !RobotState.isTest()) return; // do nothing if not in test mode or if tunable() was never called
 
+        //get new values
         double np  = SmartDashboard.getNumber(key("P"),  p);
         double ni  = SmartDashboard.getNumber(key("I"),  i);
         double nd  = SmartDashboard.getNumber(key("D"),  d);
@@ -97,15 +106,16 @@ public class PID {
         double nkV = SmartDashboard.getNumber(key("kV"), kV);
         double niz = SmartDashboard.getNumber(key("IZone"), iz);
 
-        if (!changed(np, p) && !changed(ni, i) && !changed(nd, d)
-            && !changed(nkS, kS) && !changed(nkV, kV) && !changed(niz, iz)) return;
+        //check for change
+        if (!changed(np, p) && !changed(ni, i) && !changed(nd, d) && !changed(nkS, kS) && !changed(nkV, kV) && !changed(niz, iz)) return; // if no change, do nothing
 
+        //update values
         p = np; i = ni; d = nd; kS = nkS; kV = nkV; iz = niz;
 
         // Re-apply ONLY the closed loop settings to the motors that already exist.
         // No new motor objects, no parameter reset, no flash write.
         for (SparkBase m : tuneMotors) {
-            SparkBaseConfig cfg = (m instanceof SparkFlex) ? new SparkFlexConfig() : new SparkMaxConfig();
+            SparkBaseConfig cfg = (m instanceof SparkFlex) ? new SparkFlexConfig() : new SparkMaxConfig(); // if it is a sparkflex, use sparkflexconfig, else use sparkmaxconfig 
             applyTo(cfg);
             m.configure(cfg, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         }

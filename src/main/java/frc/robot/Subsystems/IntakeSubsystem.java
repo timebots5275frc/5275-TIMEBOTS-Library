@@ -60,6 +60,7 @@ public class IntakeSubsystem extends StateBasedSubsystem<IntakeSubsystem.IntakeS
 	intakeMotor2 = m2.getMotor();
 	intakeController2 = m2.getMotorController();
 
+	//make tunable
 	IntakeConstants.MOTOR_1_DATA.getPID().tunable("Intake 1", intakeMotor1);
 	IntakeConstants.MOTOR_2_DATA.getPID().tunable("Intake 2", intakeMotor2);
 
