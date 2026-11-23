@@ -4,13 +4,18 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.Constants.InputConstants;
 import frc.robot.Commands.SetState;
 import frc.robot.Subsystems.IntakeSubsystem;
 import frc.robot.Subsystems.IntakeSubsystem.IntakeState;
+import frc.robot.Subsystems.Input.Input;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -23,12 +28,22 @@ public class RobotContainer {
 
   IntakeSubsystem intakeSubsystem;
 
+  Joystick joystick;
+  XboxController xboxController;
+  GenericHID buttonBoard;
+  Input input;
+
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer(SendableChooser<Command> autonChooser) {
     SmartDashboard.putData(autonChooser);
 
     //Instantiate Subsystems here
     intakeSubsystem = new IntakeSubsystem();
+    
+    joystick = new Joystick(InputConstants.JOYSTICK_PORT);
+    xboxController = new XboxController(InputConstants.XBOX_CONTROLLER_PORT);
+    buttonBoard = new GenericHID(InputConstants.BUTTON_BOARD_PORT);
+    input = new Input(joystick, xboxController);
 
     // Configure the trigger bindings
     configureBindings();

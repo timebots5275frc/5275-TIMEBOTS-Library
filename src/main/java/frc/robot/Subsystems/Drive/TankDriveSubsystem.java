@@ -8,20 +8,15 @@ package frc.robot.Subsystems.Drive;
 
 import com.revrobotics.spark.SparkBase.ControlType;
 
-import java.util.HashMap;
 
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
-import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.MathConstants;
 import frc.robot.CustomTypes.Helpers;
-import frc.robot.CustomTypes.MotorAndController;
-import frc.robot.CustomTypes.MotorData;
-import frc.robot.CustomTypes.PID;
+
 
 
 public class TankDriveSubsystem extends SubsystemBase {
@@ -101,8 +96,10 @@ public class TankDriveSubsystem extends SubsystemBase {
     }
 
    /**
- * meters per second
- */
+    * Drives the robot using individual wheel speeds.
+    * @param leftSpeed - meters per second
+    * @param rightSpeed - meters per second
+    */
   private void wheelDrive(double leftSpeed, double rightSpeed) {
       double leftRPM = leftSpeed * DriveConstants.CONVERSION_FACTOR;
       double rightRPM = rightSpeed * DriveConstants.CONVERSION_FACTOR;
@@ -127,6 +124,10 @@ public class TankDriveSubsystem extends SubsystemBase {
     
   }
 
+  /**
+   * Clears the I accumulator for both left and right motor controllers.
+   * This is useful to prevent integral windup when changing setpoints or stopping the robot.
+   */
   public void clearIAccum() {
     leftMotorController.setIAccum(0);
     rightMotorController.setIAccum(0);

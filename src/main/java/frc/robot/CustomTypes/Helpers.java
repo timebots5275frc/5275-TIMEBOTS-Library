@@ -11,6 +11,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+@SuppressWarnings("removal")
 public class Helpers {
 
     //#region Motor Instantiation
@@ -20,6 +21,7 @@ public class Helpers {
      * Usage:  var m = Helpers.InstantiateMax(DriveConstants.LEFT_LEADER_DATA); 
      *         motor = m.getMotor();  controller = m.getMotorController();
      */
+    
     public static MotorAndController<SparkMax> InstantiateMax(MotorData data) {
         SparkMax motor = new SparkMax(data.getID(), SparkLowLevel.MotorType.kBrushless);
         motor.configure(data.applyTo(new SparkMaxConfig()), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);

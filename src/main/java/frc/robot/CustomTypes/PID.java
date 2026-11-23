@@ -95,6 +95,7 @@ public class PID {
     private static boolean changed(double a, double b) {return Math.abs(a - b) >= MathConstants.EPSILON;}
 
     /** Call every periodic. Does nothing unless in Test mode and a value was edited. tunable() must have been called before */
+    @SuppressWarnings("removal")
     public void updateLive() {
         if (tuneName == null || !RobotState.isTest()) return; // do nothing if not in test mode or if tunable() was never called
 

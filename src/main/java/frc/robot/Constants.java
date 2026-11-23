@@ -21,20 +21,20 @@ public class Constants {
     }
 
     public static final class ControllerConstants {
-      public static final int DRIVER_STICK_CHANNEL = 0;
-      public static final int AUX_STICK_CHANNEL    = 1;
+      public static final int XBOX_CONTROLLER_PORT = 0;
+      public static final int JOYSTICK_PORT = 1;
       public static final double DEADZONE_DRIVE    = 0.1;
       public static final double DEADZONE_STEER    = 0.3;
     }
 
-    public static final class JoystickConstants
-    {
-      public static final double JOY_X_RATE_LIMIT = 6;
-      public static final double JOY_TURN_RATE_LIMIT = 12;
+    public class InputConstants {
 
-      public static final double JOY_INPUT_VELOCITY_MULT = 1;
-      public static final double JOY_INPUT_ROTATION_VELOCITY_MULT = 1;
+      public static final int JOYSTICK_PORT = 0;
+      public static final int XBOX_CONTROLLER_PORT = 0;
+      public static final int BUTTON_BOARD_PORT = 1;
+
     }
+
 
     public static class DriveConstants {
         
