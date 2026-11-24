@@ -7,6 +7,8 @@ package frc.robot.Subsystems.Vision;
 import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
 
+import com.ctre.phoenix6.hardware.Pigeon2;
+
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -24,6 +26,16 @@ public class VisionSubsystem extends SubsystemBase {
 
   private final NetworkTable limelight = NetworkTableInstance.getDefault().getTable(LIMELIGHT_NAME);
 
+
+  // The gyro is used to get the robot's rotation on the field, which is combined with the Limelight's pose data to compute the robot's position on the field using Megatag2
+  private Pigeon2 gyro;
+
+  /** Latest MegaTag 2 estimate (WPILib blue-origin coordinates). May be null if the Limelight hasn't published one. */
+  private LimelightHelpers.PoseEstimate mt2;
+
+  /** Ignore MegaTag 2 estimates while the robot spins faster than this (deg/s), since gyro/camera latency makes them unreliable. */
+  private static final double MAX_YAW_RATE_DEG_PER_SEC = 720.0;
+
   // Raw data
   private int aprilTagID = -1;
   private double horizontalOffset = 0.0; //degrees from crosshair to target; positive means target is to the right
@@ -32,7 +44,6 @@ public class VisionSubsystem extends SubsystemBase {
   private final ArrayList<Vector3> tagPosValues = new ArrayList<>();
   private final ArrayList<Vector3> tagRotValues = new ArrayList<>();
   private final ArrayList<Vector3> robotPosValues = new ArrayList<>();
-  private final ArrayList<Vector3> robotRotValues = new ArrayList<>();
 
   private Vector3 avgTagPos = Vector3.zero;
   private Vector3 avgTagRot = Vector3.zero;
@@ -41,6 +52,11 @@ public class VisionSubsystem extends SubsystemBase {
 
   /** For use in triggers/commands, e.g. new Trigger(vision.hasValidData). */
   public final BooleanSupplier hasValidData = this::hasValidData;
+
+
+  public VisionSubsystem(Pigeon2 gyro) {
+    this.gyro = gyro;
+  }
 
   //#region Periodic
   /**
@@ -52,6 +68,11 @@ public class VisionSubsystem extends SubsystemBase {
   public void periodic() {
     aprilTagID = (int) limelight.getEntry("tid").getDouble(-1.0);
     horizontalOffset = limelight.getEntry("tx").getDouble(0.0);
+
+    // MegaTag 2 requires the robot's orientation to compute the robot's position on the field. The gyro yaw (and yaw rate)
+    // are sent to the Limelight before reading the estimate. Pitch/roll are passed as 0 because they are not relevant for a flat field.
+    LimelightHelpers.SetRobotOrientation(LIMELIGHT_NAME, getGyroYawDegrees(), getGyroYawRateDegPerSec(), 0, 0, 0, 0);
+    mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LIMELIGHT_NAME);
 
     if (aprilTagID != -1) {
       updateTargetInRobotSpace();
@@ -83,20 +104,33 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   /**
-   * Reads the robot's pose on the field ({@code botpose}, ordered x, y, z, roll,
-   * pitch, yaw) and updates the rolling average of its position and rotation. If
-   * the data looks invalid, the previous averages are kept.
+   * Updates the robot's field position from the MegaTag 2 estimate ({@link #mt2}) and
+   * keeps a rolling average of the position. Rotation is taken directly from the gyro
+   * (MegaTag 2 uses the gyro yaw as its heading) rather than averaged. The estimate is
+   * rejected, and previous values are kept, if it is missing, has no tags, or the robot
+   * is rotating too fast.
    */
   private void updateRobotInFieldSpace() {
-    double[] vals = limelight.getEntry("botpose").getDoubleArray(new double[6]);
-    if (vals.length < 6 || vals[0] == 0) {
+    if (mt2 == null || mt2.tagCount == 0) {
+      return;
+    }
+    if (Math.abs(getGyroYawRateDegPerSec()) > MAX_YAW_RATE_DEG_PER_SEC) {
       return;
     }
 
-    addToBuffer(robotPosValues, new Vector3(vals[0], vals[1], vals[2]));
-    addToBuffer(robotRotValues, new Vector3(vals[3], vals[4], vals[5]));
+    addToBuffer(robotPosValues, new Vector3(mt2.pose.getX(), mt2.pose.getY(), 0));
     avgRobotPos = average(robotPosValues);
-    avgRobotRot = average(robotRotValues);
+    avgRobotRot = new Vector3(0, 0, mt2.pose.getRotation().getDegrees());
+  }
+
+  /** @return the gyro's yaw in degrees (counter-clockwise positive). */
+  private double getGyroYawDegrees() {
+    return gyro.getYaw().getValueAsDouble();
+  }
+
+  /** @return the gyro's yaw rate about the world Z axis in degrees per second. */
+  private double getGyroYawRateDegPerSec() {
+    return gyro.getAngularVelocityZWorld().getValueAsDouble();
   }
 
   /**
@@ -108,7 +142,6 @@ public class VisionSubsystem extends SubsystemBase {
     tagPosValues.clear();
     tagRotValues.clear();
     robotPosValues.clear();
-    robotRotValues.clear();
   }
 
   /**
@@ -202,15 +235,22 @@ public class VisionSubsystem extends SubsystemBase {
   public Vector3 getTagRotInRobotSpace() { return avgTagRot; }
 
   /**
-   * @return the averaged position of the robot on the field (meters),
-   *         or {@link Vector3#zero} if no data has been collected
+   * @return the averaged MegaTag 2 position of the robot on the field (meters, x/y
+   *         in the blue-alliance-origin coordinate system, z always 0), or
+   *         {@link Vector3#zero} if no data has been collected
    */
   public Vector3 getRobotPosInFieldSpace() { return avgRobotPos; }
 
   /**
-   * @return the averaged rotation of the robot on the field (degrees: roll, pitch,
-   *         yaw), or {@link Vector3#zero} if no data has been collected. Note that
-   *         plain averaging of angles can misbehave near the ±180° wraparound.
+   * @return the robot's field rotation in degrees (roll, pitch, yaw) as used by
+   *         MegaTag 2. Roll and pitch are always 0 and yaw comes from the gyro.
+   *         {@link Vector3#zero} if no data has been collected.
    */
   public Vector3 getRobotRotInFieldSpace() { return avgRobotRot; }
+
+  /**
+   * @return the latest raw MegaTag 2 estimate (pose, timestamp, tag count, etc.),
+   *         suitable for feeding a pose estimator. May be null.
+   */
+  public LimelightHelpers.PoseEstimate getMegaTag2Estimate() { return mt2; }
 }

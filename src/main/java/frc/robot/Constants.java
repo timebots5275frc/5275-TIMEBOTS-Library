@@ -1,5 +1,12 @@
 package frc.robot;
 
+import java.util.List;
+
+import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.CustomTypes.MotorData;
 import frc.robot.CustomTypes.PID;
@@ -79,93 +86,156 @@ public class Constants {
     }
 
     //#region Vision Constants
-    public static final class VisionConstants {
+    public class VisionConstants {
+
+      public static final int VALUES_TO_AVERAGE = 5; // Number of values to average for smoothing the robot's position and rotation estimates
       
-      //#region April Tag 
-      public static enum AprilTagData
-      {
-        //Red Hub
-        Hub_Right_Far_Red(2, "Hub Right Far", DriverStation.Alliance.Red),
-        Hub_Back_Right_Red(3, "Hub Back Right", DriverStation.Alliance.Red),
-        Hub_Back_Left_Red(4, "Hub Back Left", DriverStation.Alliance.Red, 0, 16.6193978),
-        Hub_Left_Far_Red(5, "Hub Left Far", DriverStation.Alliance.Red, -2.7389074, 14.778355),
-        Hub_Left_Close_Red(8, "Hub Left Close", DriverStation.Alliance.Red),
-        Hub_Front_Left_Red(9, "Hub Front Left", DriverStation.Alliance.Red),
-        Hub_Front_Right_Red(10, "Hub Front Right", DriverStation.Alliance.Red),
-        Hub_Right_Close_Red(11, "Hub Right Close", DriverStation.Alliance.Red),
-        //Blue Hub
-        Hub_Right_Far_Blue(18, "Hub Right Far", DriverStation.Alliance.Blue),
-        Hub_Back_Right_Blue(19, "Hub Back Right", DriverStation.Alliance.Blue),
-        Hub_Back_Left_Blue(20, "Hub Back Left", DriverStation.Alliance.Blue, 0, 16.6193978),
-        Hub_Left_Far_Blue(21, "Hub Left Far", DriverStation.Alliance.Blue, -2.7389074, 14.778355),
-        Hub_Left_Close_Blue(24, "Hub Left Close", DriverStation.Alliance.Blue),
-        Hub_Front_Left_Blue(25, "Hub Front Left", DriverStation.Alliance.Blue),
-        Hub_Front_Right_Blue(26, "Hub Front Right", DriverStation.Alliance.Blue),
-        Hub_Right_Close_Blue(27, "Hub Right Close", DriverStation.Alliance.Blue);
 
-        public final int id;
-        public final String name;
-        public final DriverStation.Alliance alliance;
-        private AprilTagData(int id, String name, DriverStation.Alliance alliance)
-        {
-          this.id = id;
-          this.name = name;
-          this.alliance = alliance;
+
+      public static final double HUB_FIELD_SPACE_Z_POSITION = 1.8288;
+      public static final double RED_HUB_FIELD_SPACE_X_POSITION = 11.919;
+      public static final double RED_HUB_FIELD_SPACE_Y_POSITION = 4.02844;
+      public static final double BLUE_HUB_FIELD_SPACE_X_POSITION = 4.626; 
+      public static final double BLUE_HUB_FIELD_SPACE_Y_POSITION = 4.02844; 
+      public static final Translation3d RED_HUB_POSE = new Translation3d(RED_HUB_FIELD_SPACE_X_POSITION, RED_HUB_FIELD_SPACE_Y_POSITION,HUB_FIELD_SPACE_Z_POSITION);
+      public static final Translation3d BLUE_HUB_POSE = new Translation3d(BLUE_HUB_FIELD_SPACE_X_POSITION, BLUE_HUB_FIELD_SPACE_Y_POSITION,HUB_FIELD_SPACE_Z_POSITION);
+
+
+      public class AprilTagFieldConstants {
+
+      public static final double FIELD_LENGTH = 16.54;
+      public static final double FIELD_WIDTH = 8.07;
+
+      public static final List<AprilTag> TAGS = List.of(
+      new AprilTag(1, new Pose3d(
+        new Translation3d(11.878, 7.425, 0.889),
+        new Rotation3d(0, 0, Math.toRadians(180)))),
+
+      new AprilTag(2, new Pose3d(
+        new Translation3d(11.915, 4.638, 1.124),
+        new Rotation3d(0, 0, Math.toRadians(90)))),
+
+      new AprilTag(3, new Pose3d(
+        new Translation3d(11.312, 4.390, 1.124),
+        new Rotation3d(0, 0, Math.toRadians(180)))),
+
+      new AprilTag(4, new Pose3d(
+        new Translation3d(11.312, 4.035, 1.124),
+        new Rotation3d(0, 0, Math.toRadians(180)))),
+
+      new AprilTag(5, new Pose3d(
+        new Translation3d(11.915, 3.431, 1.124),
+        new Rotation3d(0, 0, Math.toRadians(270)))),
+
+      new AprilTag(6, new Pose3d(
+        new Translation3d(11.878, 0.644, 0.889),
+        new Rotation3d(0, 0, Math.toRadians(180)))),
+
+      new AprilTag(7, new Pose3d(
+        new Translation3d(11.953, 0.644, 0.889),
+        new Rotation3d(0, 0, Math.toRadians(0)))),
+
+      new AprilTag(8, new Pose3d(
+        new Translation3d(12.271, 3.431, 1.124),
+        new Rotation3d(0, 0, Math.toRadians(270)))),
+
+      new AprilTag(9, new Pose3d(
+        new Translation3d(4.022, 3.679, 1.124),
+        new Rotation3d(0, 0, Math.toRadians(0)))),
+
+      new AprilTag(10, new Pose3d(
+        new Translation3d(12.519, 4.035, 1.124),
+        new Rotation3d(0, 0, Math.toRadians(0)))),
+
+      new AprilTag(11, new Pose3d(
+        new Translation3d(12.271, 4.638, 1.124),
+        new Rotation3d(0, 0, Math.toRadians(90)))),
+
+      new AprilTag(12, new Pose3d(
+        new Translation3d(11.953, 7.425, 0.889),
+        new Rotation3d(0, 0, Math.toRadians(0)))),
+
+      new AprilTag(13, new Pose3d(
+        new Translation3d(16.533, 7.403, 0.552),
+        new Rotation3d(0, 0, Math.toRadians(180)))),
+
+      new AprilTag(14, new Pose3d(
+        new Translation3d(16.533, 6.972, 0.552),
+        new Rotation3d(0, 0, Math.toRadians(180)))),
+
+      new AprilTag(15, new Pose3d(
+        new Translation3d(16.533, 4.324, 0.552),
+        new Rotation3d(0, 0, Math.toRadians(180)))),
+
+      new AprilTag(16, new Pose3d(
+        new Translation3d(16.533, 3.892, 0.552),
+        new Rotation3d(0, 0, Math.toRadians(180)))),
+
+      new AprilTag(17, new Pose3d(
+        new Translation3d(4.663, 0.644, 0.889),
+        new Rotation3d(0, 0, Math.toRadians(0)))),
+
+      new AprilTag(18, new Pose3d(
+        new Translation3d(4.626, 3.431, 1.124),
+        new Rotation3d(0, 0, Math.toRadians(270)))),
+
+      new AprilTag(19, new Pose3d(
+        new Translation3d(5.229, 3.679, 1.124),
+        new Rotation3d(0, 0, Math.toRadians(0)))),
+
+      new AprilTag(20, new Pose3d(
+        new Translation3d(5.229, 4.035, 1.124),
+        new Rotation3d(0, 0, Math.toRadians(90)))),
+
+      new AprilTag(21, new Pose3d(
+        new Translation3d(4.626, 4.638, 1.124),
+        new Rotation3d(0, 0, Math.toRadians(90)))),
+
+      new AprilTag(22, new Pose3d(
+        new Translation3d(4.663, 7.425, 0.889),
+        new Rotation3d(0, 0, Math.toRadians(0)))),
+
+      new AprilTag(23, new Pose3d(
+        new Translation3d(4.588, 7.425, 0.889),
+        new Rotation3d(0, 0, Math.toRadians(180)))),
+
+      new AprilTag(24, new Pose3d(
+        new Translation3d(4.271, 4.638, 1.124),
+        new Rotation3d(0, 0, Math.toRadians(90)))),
+
+      new AprilTag(25, new Pose3d(
+        new Translation3d(4.022, 4.390, 1.124),
+        new Rotation3d(0, 0, Math.toRadians(180)))),
+
+      new AprilTag(26, new Pose3d(
+        new Translation3d(4.022, 4.035, 1.124),
+        new Rotation3d(0, 0, Math.toRadians(180)))),
+
+      new AprilTag(27, new Pose3d(
+        new Translation3d(4.271, 3.431, 1.124),
+        new Rotation3d(0, 0, Math.toRadians(270)))),
+
+      new AprilTag(28, new Pose3d(
+        new Translation3d(4.588, 0.644, 0.889),
+        new Rotation3d(0, 0, Math.toRadians(180)))),
+
+      new AprilTag(29, new Pose3d(
+        new Translation3d(0.008, 0.666, 0.552),
+        new Rotation3d(0, 0, Math.toRadians(0)))),
+
+      new AprilTag(30, new Pose3d(
+        new Translation3d(0.008, 1.098, 0.552),
+        new Rotation3d(0, 0, Math.toRadians(0)))),
+
+      new AprilTag(31, new Pose3d(
+        new Translation3d(0.008, 3.746, 0.552),
+        new Rotation3d(0, 0, Math.toRadians(0)))),
+
+      new AprilTag(32, new Pose3d(
+        new Translation3d(0.008, 4.178, 0.552),
+        new Rotation3d(0, 0, Math.toRadians(0))))
+      );
         }
-
-        private AprilTagData(int id, String name, DriverStation.Alliance alliance, double x, double y)
-        {
-          this.id = id;
-          this.name = name;
-          this.alliance = alliance;
-        }
-
-        @Override
-        public String toString()
-        {
-          return (alliance == DriverStation.Alliance.Blue ? "Blue " : "Red ") + name + "[" + id + "]";
-        }
-
-        public static AprilTagData getTag(int id) {
-          switch(id){
-            // case 1: return Trench_Right_Neutral_Zone;
-            case 2: return Hub_Right_Far_Red;
-            case 3: return Hub_Back_Right_Red;
-            case 4: return Hub_Back_Left_Red;
-            case 5: return Hub_Left_Far_Red;
-            // case 6: return Trench_Left_Neutral_Zone;
-            // case 7: return Trench_Left_Alliance_Zone;
-            case 8: return Hub_Left_Close_Red;
-            case 9: return Hub_Front_Left_Red;
-            case 10: return Hub_Front_Right_Red;
-            case 11: return Hub_Right_Close_Red;
-            // case 12: return Trench_Right_Alliance_Zone;
-            // case 13: return Loading_Station_Right;
-            // case 14: return Loading_Station_Left;
-            // case 15: return Tower_Right;
-            // case 16: return Tower_Left;
-            // case 17: return Trench_Right_Neutral_Zone;
-            case 18: return Hub_Right_Far_Blue;
-            case 19: return Hub_Back_Right_Blue;
-            case 20: return Hub_Back_Left_Blue;
-            case 21: return Hub_Left_Far_Blue;
-            // case 22: return ba_amplifier;
-            // case 23: return ba_speaker_main;
-            case 24: return Hub_Left_Close_Blue;
-            case 25: return Hub_Front_Left_Blue;
-            case 26: return Hub_Front_Right_Blue;
-            case 27: return Hub_Right_Close_Blue;
-            // case 28: return ra_core_opp_scoring_table;
-            // case 29: return ra_core_mid;
-            // case 30: return ba_core_mid;
-            // case 31: return ba_core_opp_scoring_table;
-            // case 32: return ba_core_scoring_table;
-            default: return null;
-          }
-        }
-      }
-
-    public static final int VALUES_TO_AVERAGE = 0;
     }
     //#endregion
 }

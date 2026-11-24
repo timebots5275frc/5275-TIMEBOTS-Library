@@ -49,9 +49,9 @@ public class RobotContainer {
     //Instantiate Subsystems here
     intakeSubsystem = new IntakeSubsystem();
     tankDriveSubsystem = new TankDriveSubsystem();
-    visionSubsystem = new VisionSubsystem();
+    
     gyro = new Pigeon2(6); //obviouslly set the id to something else
-  
+    visionSubsystem = new VisionSubsystem(gyro);
     
     joystick = new Joystick(InputConstants.JOYSTICK_PORT);
     xboxController = new XboxController(InputConstants.XBOX_CONTROLLER_PORT);
