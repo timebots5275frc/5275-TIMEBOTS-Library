@@ -101,14 +101,19 @@ public class TankDriveSubsystem extends SubsystemBase {
     * @param rightSpeed - meters per second
     */
   private void wheelDrive(double leftSpeed, double rightSpeed) {
-      double leftRPM = leftSpeed * DriveConstants.CONVERSION_FACTOR;
-      double rightRPM = rightSpeed * DriveConstants.CONVERSION_FACTOR;
+    double leftRPM = leftSpeed * DriveConstants.CONVERSION_FACTOR;
+    double rightRPM = rightSpeed * DriveConstants.CONVERSION_FACTOR;
 
-      SmartDashboard.putNumber("right rpm goal", rightRPM);
-      SmartDashboard.putNumber("left rpm goal", leftRPM);
+    SmartDashboard.putNumber("right rpm goal", rightRPM);
+    SmartDashboard.putNumber("left rpm goal", leftRPM);
 
-      leftMotorController.setSetpoint(leftRPM * DriveConstants.FORWARD, ControlType.kVelocity);
-      rightMotorController.setSetpoint(rightRPM * DriveConstants.FORWARD, ControlType.kVelocity);
+    // Clear the I accumulator if both speeds are zero to prevent integral windup
+    if (leftSpeed == 0 && rightSpeed == 0) {
+      clearIAccum();
+    }
+
+    leftMotorController.setSetpoint(leftRPM * DriveConstants.FORWARD, ControlType.kVelocity);
+    rightMotorController.setSetpoint(rightRPM * DriveConstants.FORWARD, ControlType.kVelocity);
   }
 
 

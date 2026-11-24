@@ -10,11 +10,14 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.InputConstants;
 import frc.robot.Commands.SetState;
+import frc.robot.Commands.Drive.TankDrive.TankDriveCommand;
 import frc.robot.Subsystems.IntakeSubsystem;
 import frc.robot.Subsystems.IntakeSubsystem.IntakeState;
+import frc.robot.Subsystems.Drive.TankDriveSubsystem;
 import frc.robot.Subsystems.Input.Input;
 
 /**
@@ -27,6 +30,7 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
 
   IntakeSubsystem intakeSubsystem;
+  TankDriveSubsystem tankDriveSubsystem;
 
   Joystick joystick;
   XboxController xboxController;
@@ -39,6 +43,8 @@ public class RobotContainer {
 
     //Instantiate Subsystems here
     intakeSubsystem = new IntakeSubsystem();
+    tankDriveSubsystem = new TankDriveSubsystem();
+
     
     joystick = new Joystick(InputConstants.JOYSTICK_PORT);
     xboxController = new XboxController(InputConstants.XBOX_CONTROLLER_PORT);
@@ -59,9 +65,25 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
+    //make sure to actually set the button numbers for the button board and xbox controller, the current numbers are just placeholders
+    
 
-    //creates a new button
-    new JoystickButton(null, 0).onTrue(new SetState<IntakeState>(intakeSubsystem, IntakeState.INTAKE));
+    //INTAKE Buttons
+    new JoystickButton(buttonBoard, 0).onTrue(new SetState<IntakeState>(intakeSubsystem, IntakeState.INTAKE));
+    new JoystickButton(buttonBoard, 0).onTrue(new SetState<IntakeState>(intakeSubsystem, IntakeState.NONE));
+    new JoystickButton(buttonBoard, 0).onTrue(new SetState<IntakeState>(intakeSubsystem, IntakeState.OUTTAKE));
+
+    //lowk could just use inline commands, but setstate might be easier to learn instead of lambdas
+    new JoystickButton(buttonBoard, 0).onTrue(Commands.runOnce(()-> intakeSubsystem.setState(IntakeState.INTAKE), intakeSubsystem));
+
+    //DRIVE 
+    tankDriveSubsystem.setDefaultCommand(new TankDriveCommand(input, tankDriveSubsystem));
+
+    //XBOX Controller Buttons 
+    new JoystickButton(xboxController, 1).onTrue(Commands.runOnce(()-> input.incrementControllerTranslationSpeed()));
+    new JoystickButton(xboxController, 1).onTrue(Commands.runOnce(()-> input.decrementControllerTranslationSpeed()));
+    new JoystickButton(xboxController, 1).onTrue(Commands.runOnce(()-> input.incrementControllerTwistSpeed()));
+    new JoystickButton(xboxController, 1).onTrue(Commands.runOnce(()-> input.decrementControllerTwistSpeed()));
 
 
   }
