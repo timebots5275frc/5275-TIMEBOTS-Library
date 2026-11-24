@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.hardware.Pigeon2;
+
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
@@ -17,6 +19,7 @@ import frc.robot.Commands.SetState;
 import frc.robot.Commands.Drive.TankDrive.TankDriveCommand;
 import frc.robot.Subsystems.IntakeSubsystem;
 import frc.robot.Subsystems.IntakeSubsystem.IntakeState;
+import frc.robot.Subsystems.Vision.VisionSubsystem;
 import frc.robot.Subsystems.Drive.TankDriveSubsystem;
 import frc.robot.Subsystems.Input.Input;
 
@@ -31,6 +34,8 @@ public class RobotContainer {
 
   IntakeSubsystem intakeSubsystem;
   TankDriveSubsystem tankDriveSubsystem;
+  VisionSubsystem visionSubsystem;
+  Pigeon2 gyro;
 
   Joystick joystick;
   XboxController xboxController;
@@ -44,7 +49,9 @@ public class RobotContainer {
     //Instantiate Subsystems here
     intakeSubsystem = new IntakeSubsystem();
     tankDriveSubsystem = new TankDriveSubsystem();
-
+    visionSubsystem = new VisionSubsystem();
+    gyro = new Pigeon2(6); //obviouslly set the id to something else
+  
     
     joystick = new Joystick(InputConstants.JOYSTICK_PORT);
     xboxController = new XboxController(InputConstants.XBOX_CONTROLLER_PORT);
@@ -85,6 +92,9 @@ public class RobotContainer {
     new JoystickButton(xboxController, 1).onTrue(Commands.runOnce(()-> input.incrementControllerTwistSpeed()));
     new JoystickButton(xboxController, 1).onTrue(Commands.runOnce(()-> input.decrementControllerTwistSpeed()));
 
+    //VISION Buttons
+    new JoystickButton(xboxController, 1).onTrue(Commands.runOnce(()-> visionSubsystem.setLEDs(true)));
+    new JoystickButton(xboxController, 1).onTrue(Commands.runOnce(()-> visionSubsystem.setLEDs(false)));
 
   }
 

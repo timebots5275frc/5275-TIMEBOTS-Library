@@ -160,7 +160,7 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   // ----------------------------------------------------------------- Control
-
+  //#region Control
   /**
    * Forces the Limelight LEDs on or off, overriding the pipeline's LED setting.
    *
