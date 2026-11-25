@@ -5,10 +5,15 @@ package frc.robot.Subsystems.Vision;
 // the WPILib BSD license file in the root directory of this project.
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BooleanSupplier;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -22,9 +27,9 @@ import frc.robot.CustomTypes.Math.Vector3;
  */
 public class VisionSubsystem extends SubsystemBase {
 
-  private static final String LIMELIGHT_NAME = "limelight";
+  
 
-  private final NetworkTable limelight = NetworkTableInstance.getDefault().getTable(LIMELIGHT_NAME);
+  private final NetworkTable limelight = NetworkTableInstance.getDefault().getTable(VisionConstants.LIMELIGHT_NAME);
 
 
   // The gyro is used to get the robot's rotation on the field, which is combined with the Limelight's pose data to compute the robot's position on the field using Megatag2
@@ -33,8 +38,19 @@ public class VisionSubsystem extends SubsystemBase {
   /** Latest MegaTag 2 estimate (WPILib blue-origin coordinates). May be null if the Limelight hasn't published one. */
   private LimelightHelpers.PoseEstimate mt2;
 
-  /** Ignore MegaTag 2 estimates while the robot spins faster than this (deg/s), since gyro/camera latency makes them unreliable. */
-  private static final double MAX_YAW_RATE_DEG_PER_SEC = 720.0;
+  
+
+  // ---- Pose estimator measurement queue ----
+
+  
+  /** Validated measurements waiting to be consumed by the pose estimator. */
+  private final ArrayList<VisionMeasurement> pendingMeasurements = new ArrayList<>();
+
+  /** Timestamp of the last MegaTag 2 frame we processed, used to skip duplicate frames. */
+  private double lastMeasurementTimestamp = -1;
+
+  private final AprilTagFieldLayout fieldLayout =
+      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
   // Raw data
   private int aprilTagID = -1;
@@ -62,7 +78,8 @@ public class VisionSubsystem extends SubsystemBase {
   /**
    * Runs every robot loop. Reads the latest tag ID and horizontal offset from the
    * Limelight, updates the averaged pose data if a tag is visible (or clears the
-   * buffers if not), and logs everything to SmartDashboard.
+   * buffers if not), queues a validated MegaTag 2 measurement for the pose
+   * estimator, and logs everything to SmartDashboard.
    */
   @Override
   public void periodic() {
@@ -71,8 +88,10 @@ public class VisionSubsystem extends SubsystemBase {
 
     // MegaTag 2 requires the robot's orientation to compute the robot's position on the field. The gyro yaw (and yaw rate)
     // are sent to the Limelight before reading the estimate. Pitch/roll are passed as 0 because they are not relevant for a flat field.
-    LimelightHelpers.SetRobotOrientation(LIMELIGHT_NAME, getGyroYawDegrees(), getGyroYawRateDegPerSec(), 0, 0, 0, 0);
-    mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LIMELIGHT_NAME);
+    LimelightHelpers.SetRobotOrientation(VisionConstants.LIMELIGHT_NAME, getGyroYawDegrees(), getGyroYawRateDegPerSec(), 0, 0, 0, 0);
+    mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(VisionConstants.LIMELIGHT_NAME);
+
+    queueMeasurement();
 
     if (aprilTagID != -1) {
       updateTargetInRobotSpace();
@@ -114,7 +133,7 @@ public class VisionSubsystem extends SubsystemBase {
     if (mt2 == null || mt2.tagCount == 0) {
       return;
     }
-    if (Math.abs(getGyroYawRateDegPerSec()) > MAX_YAW_RATE_DEG_PER_SEC) {
+    if (Math.abs(getGyroYawRateDegPerSec()) > VisionConstants.MAX_YAW_RATE_DEG_PER_SEC) {
       return;
     }
 
@@ -123,6 +142,60 @@ public class VisionSubsystem extends SubsystemBase {
     avgRobotRot = new Vector3(0, 0, mt2.pose.getRotation().getDegrees());
   }
 
+  // ------------------------------------------------- Pose estimator measurements
+  //#region Pose Estimator Measurements
+  /**
+   * Validates the latest MegaTag 2 estimate and, if it passes, queues it for the
+   * pose estimator. Uses the raw estimate (not the rolling averages) so the
+   * timestamp matches the data, which the Kalman filter needs for latency
+   * compensation. Rejects: missing estimates, zero tags, duplicate frames,
+   * fast rotation, and poses outside the field.
+   */
+  private void queueMeasurement() {
+    if (mt2 == null || mt2.tagCount == 0) {
+      return;
+    }
+    if (mt2.timestampSeconds == lastMeasurementTimestamp) {
+      return; // same frame we already handled
+    }
+    lastMeasurementTimestamp = mt2.timestampSeconds;
+
+    if (Math.abs(getGyroYawRateDegPerSec()) > VisionConstants.MAX_YAW_RATE_DEG_PER_SEC) {
+      return;
+    }
+    if (!isOnField(mt2.pose)) {
+      return;
+    }
+
+    // Trust shrinks with distance squared and grows with tag count
+    double xyStdDev = VisionConstants.BASE_XY_STD_DEV * mt2.avgTagDist * mt2.avgTagDist / mt2.tagCount;
+
+    pendingMeasurements.add(new VisionMeasurement(
+        mt2.pose,
+        mt2.timestampSeconds,
+        VecBuilder.fill(xyStdDev, xyStdDev, VisionConstants.IGNORE_THETA_STD_DEV)));
+  }
+
+  /** @return true if the pose lies within the field boundaries. */
+  private boolean isOnField(Pose2d p) {
+    return p.getX() >= 0 && p.getX() <= fieldLayout.getFieldLength()
+        && p.getY() >= 0 && p.getY() <= fieldLayout.getFieldWidth();
+  }
+
+  /**
+   * Returns the validated vision measurements gathered since the last call, then
+   * clears the queue. Intended to be called from exactly one place (the global
+   * pose subsystem), since calling it twice in a loop returns nothing the second time.
+   *
+   * @return new measurements; empty if no new frame passed validation
+   */
+  public List<VisionMeasurement> getMeasurements() {
+    List<VisionMeasurement> out = new ArrayList<>(pendingMeasurements);
+    pendingMeasurements.clear();
+    return out;
+  }
+
+  // -------------------------------------------------------------- Gyro helpers
   /** @return the gyro's yaw in degrees (counter-clockwise positive). */
   private double getGyroYawDegrees() {
     return gyro.getYaw().getValueAsDouble();

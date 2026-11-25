@@ -24,7 +24,9 @@ public class TankDriveSubsystem extends SubsystemBase {
   private SparkMax leftLeaderMotor;
   private SparkMax rightLeaderMotor;
 
+  @SuppressWarnings("unused")
   private SparkMax leftFollowerMotor;
+  @SuppressWarnings("unused")
   private SparkMax rightFollowerMotor;
 
   private SparkClosedLoopController leftMotorController;

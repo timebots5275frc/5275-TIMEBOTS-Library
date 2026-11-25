@@ -5,12 +5,9 @@ import java.util.List;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.CustomTypes.MotorData;
 import frc.robot.CustomTypes.PID;
-import frc.robot.CustomTypes.Math.Vector2;
 
 public class Constants {
 
@@ -90,7 +87,7 @@ public class Constants {
 
       public static final int VALUES_TO_AVERAGE = 5; // Number of values to average for smoothing the robot's position and rotation estimates
       
-
+      public static final String LIMELIGHT_NAME = "limelight";
 
       public static final double HUB_FIELD_SPACE_Z_POSITION = 1.8288;
       public static final double RED_HUB_FIELD_SPACE_X_POSITION = 11.919;
@@ -99,6 +96,19 @@ public class Constants {
       public static final double BLUE_HUB_FIELD_SPACE_Y_POSITION = 4.02844; 
       public static final Translation3d RED_HUB_POSE = new Translation3d(RED_HUB_FIELD_SPACE_X_POSITION, RED_HUB_FIELD_SPACE_Y_POSITION,HUB_FIELD_SPACE_Z_POSITION);
       public static final Translation3d BLUE_HUB_POSE = new Translation3d(BLUE_HUB_FIELD_SPACE_X_POSITION, BLUE_HUB_FIELD_SPACE_Y_POSITION,HUB_FIELD_SPACE_Z_POSITION);
+
+
+      /** Ignore MegaTag 2 estimates while the robot spins faster than this (deg/s), since gyro/camera latency makes them unreliable. */
+      public static final double MAX_YAW_RATE_DEG_PER_SEC = 720.0;
+
+      //PoseEstimator Queue
+      /** Base XY standard deviation (meters) at 1 m with one tag. Raise if the pose jumps, lower if drift corrects too slowly. */
+      public static final double BASE_XY_STD_DEV = 0.5;
+
+      /** Huge theta std dev so the estimator ignores vision rotation and trusts the gyro. shouldn't need to be changed, change if gyro unreliable*/
+      public static final double IGNORE_THETA_STD_DEV = 9999999;
+
+
 
 
       public class AprilTagFieldConstants {

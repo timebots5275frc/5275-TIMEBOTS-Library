@@ -11,20 +11,15 @@
 
 package frc.robot.Subsystems;
 
-import java.util.HashMap;
 
 import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Constants;
-import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.CustomTypes.Helpers;
 import frc.robot.CustomTypes.MotorAndController;
-import frc.robot.CustomTypes.MotorData;
 import frc.robot.CustomTypes.StateBasedSubsystem;
 
 
