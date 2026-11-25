@@ -106,6 +106,7 @@ public class Constants {
       public static final double FIELD_LENGTH = 16.54;
       public static final double FIELD_WIDTH = 8.07;
 
+      /**I don't actually know why this would be necsasary */
       public static final List<AprilTag> TAGS = List.of(
       new AprilTag(1, new Pose3d(
         new Translation3d(11.878, 7.425, 0.889),

@@ -19,9 +19,9 @@ import frc.robot.Commands.SetState;
 import frc.robot.Commands.Drive.TankDrive.TankDriveCommand;
 import frc.robot.Subsystems.IntakeSubsystem;
 import frc.robot.Subsystems.IntakeSubsystem.IntakeState;
-import frc.robot.Subsystems.Vision.VisionSubsystem;
 import frc.robot.Subsystems.Drive.TankDriveSubsystem;
 import frc.robot.Subsystems.Input.Input;
+import frc.robot.Subsystems.Vision.VisionSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
