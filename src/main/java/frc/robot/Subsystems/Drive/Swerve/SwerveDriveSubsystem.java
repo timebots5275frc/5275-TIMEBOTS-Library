@@ -36,7 +36,7 @@ import frc.robot.CustomTypes.Math.Vector2;
  * states, module positions) uses the same order everywhere:
  * left front (LF), right front (RF), right rear (RR), left rear (LR).
  */
-public class SwerveDrive extends SubsystemBase {
+public class SwerveDriveSubsystem extends SubsystemBase {
 
   //#region Hardware and kinematics (field initialization order matters, don't reorder)
 
@@ -53,7 +53,7 @@ public class SwerveDrive extends SubsystemBase {
   private final SwerveModule leftRearSwerveModule   = new SwerveModule(SwerveDriveConstants.LEFT_REAR_DRIVE_MOTOR_DATA,   SwerveDriveConstants.LEFT_REAR_STEER_MOTOR_DATA,   SwerveDriveConstants.LEFT_REAR_STEER_ENCODER_ID,   "LR");
 
   // Gyro: provides the robot heading (yaw)
-  Pigeon2 pigeon2Gyro = new Pigeon2(SwerveDriveConstants.PIGEON_2_ID);
+  Pigeon2 pigeon2Gyro;
 
   // Converts between chassis motion and per-wheel states
   public final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(leftFrontWheelLocation, rightFrontWheelLocation, rightRearWheelLocation, leftRearWheelLocation);
@@ -72,9 +72,13 @@ public class SwerveDrive extends SubsystemBase {
   //#endregion
 
   /** Creates the drivetrain. Field-relative driving is enabled by default. */
-  public SwerveDrive() {
+  public SwerveDriveSubsystem(Pigeon2 pigeon2Gyro) {
+    this.pigeon2Gyro = pigeon2Gyro;
     flip = false;
-    System.out.println("SwerveDrive.java started...");
+    
+    //allow for live pid tuning for drive and steer velocity pids
+    SwerveDriveConstants.DRIVE_PID.tunable("Drive PID",leftFrontSwerveModule.getDriveMotor(),leftRearSwerveModule.getDriveMotor(),rightFrontSwerveModule.getDriveMotor(),rightRearSwerveModule.getDriveMotor());
+    SwerveDriveConstants.STEER_VELOCITY_PID.tunable("Steer Velocity PID", leftFrontSwerveModule.getSteerMotor(),leftRearSwerveModule.getSteerMotor(),rightFrontSwerveModule.getSteerMotor(),rightRearSwerveModule.getSteerMotor());
   }
 
   /** Runs every loop: updates odometry and publishes the heading, positions, and pose. */
@@ -87,6 +91,11 @@ public class SwerveDrive extends SubsystemBase {
     SmartDashboard.putNumber("left front pos", currentSwerveModulePositions[0].distanceMeters);
     SmartDashboard.putString("Odometry Pos", getOdometryPosition().toString());
     SmartDashboard.putString("Odometry Rot", m_odometry.getPoseMeters().getRotation().toString());
+    
+
+    //Live PID tuning for drive and steer velocity pids
+    SwerveDriveConstants.DRIVE_PID.updateLive();
+    SwerveDriveConstants.STEER_VELOCITY_PID.updateLive();
   }
 
   //#region Driving

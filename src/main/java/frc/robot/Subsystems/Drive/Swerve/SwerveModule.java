@@ -39,7 +39,6 @@ public class SwerveModule {
     // ------------------------------------------------------------------ Hardware
 
     public SparkFlex driveMotor;
-    @SuppressWarnings("unused")
     private SparkMax steerMotor;
     private CANcoder steerAngleEncoder; // absolute wheel angle, in rotations
 
@@ -89,7 +88,6 @@ public class SwerveModule {
             SwerveDriveConstants.STEER_ANGLE_PID.d);
         steerAnglePID.enableContinuousInput(-180, 180);
 
-        //TODO: live pid tuning
     }
 
     // ------------------------------------------------------------------ State
@@ -184,5 +182,14 @@ public class SwerveModule {
     public double speedFromDriveRpm(double rpm) {
         double speedMetersPerSecond = rpm * SwerveDriveConstants.DRIVE_GEAR_RATIO * SwerveDriveConstants.WHEEL_CIRCUMFERENCE / 60.0;
         return -1 * speedMetersPerSecond; // Rotation reversed due to gears.
+    }
+
+
+    //#region Getters
+    public SparkFlex getDriveMotor() {
+        return driveMotor;
+    }
+    public SparkMax getSteerMotor() {
+        return steerMotor;
     }
 }

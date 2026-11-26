@@ -20,6 +20,7 @@ import frc.robot.Commands.Drive.TankDrive.TankDriveCommand;
 import frc.robot.Subsystems.IntakeSubsystem;
 import frc.robot.Subsystems.IntakeSubsystem.IntakeState;
 import frc.robot.Subsystems.Drive.TankDriveSubsystem;
+import frc.robot.Subsystems.Drive.Swerve.SwerveDriveSubsystem;
 import frc.robot.Subsystems.Input.Input;
 import frc.robot.Subsystems.Vision.VisionSubsystem;
 
@@ -34,9 +35,11 @@ public class RobotContainer {
 
   IntakeSubsystem intakeSubsystem;
   TankDriveSubsystem tankDriveSubsystem;
+  SwerveDriveSubsystem swerveDrive;
   VisionSubsystem visionSubsystem;
+  SwerveDriveSubsystem swerveDriveSubsystem;
+  
   Pigeon2 gyro;
-
   Joystick joystick;
   XboxController xboxController;
   GenericHID buttonBoard;
@@ -47,16 +50,19 @@ public class RobotContainer {
     SmartDashboard.putData(autonChooser);
 
     //Instantiate Subsystems here
-    intakeSubsystem = new IntakeSubsystem();
-    tankDriveSubsystem = new TankDriveSubsystem();
-    
-    gyro = new Pigeon2(6); //obviouslly set the id to something else
-    visionSubsystem = new VisionSubsystem(gyro);
     
     joystick = new Joystick(InputConstants.JOYSTICK_PORT);
     xboxController = new XboxController(InputConstants.XBOX_CONTROLLER_PORT);
     buttonBoard = new GenericHID(InputConstants.BUTTON_BOARD_PORT);
     input = new Input(joystick, xboxController);
+    gyro = new Pigeon2(6); //obviouslly set the id to something else
+
+
+    swerveDriveSubsystem = new SwerveDriveSubsystem(gyro);
+    intakeSubsystem = new IntakeSubsystem();
+    tankDriveSubsystem = new TankDriveSubsystem();
+    visionSubsystem = new VisionSubsystem(gyro);
+    
 
     // Configure the trigger bindings
     configureBindings();

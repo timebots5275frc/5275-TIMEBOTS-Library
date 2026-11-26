@@ -50,7 +50,7 @@ public class Constants {
     //#region Tank Drive constants
     public static class TankDriveConstants {
         
-      public static  PID DRIVE_PID = new PID(0.00015,0.0000005,0.00013,0); //TODO: PID TUNING
+      public static  PID DRIVE_PID = new PID(0.00015,0.0000005,0.00013,0); 
       public static final int FORWARD = 1; //flip sign to flip foward
 
       //current limits
@@ -104,9 +104,9 @@ public class Constants {
       public static final double MAX_STEER_RATE = .5; // rotations/second of a wheel for steer.
       public static final double MAX_TWIST_RATE = .6 * 2.0 * Math.PI; // radians/second of the robot rotation.
 
-      public static final double CONTROLLER_TWIST_RATE = 2; // constant turn rate for using controller//TODO check
+      public static final double CONTROLLER_TWIST_RATE = 2; // constant turn rate for using controller
 
-      public static final int PIGEON_2_ID = 9; //TODO check
+      public static final int PIGEON_2_ID = 9; 
 
       public static final double DRIVE_GEAR_RATIO = 1.0/5.9;//.169;
       public static final double STEER_GEAR_RATIO = .05333333333;
@@ -120,9 +120,10 @@ public class Constants {
       public static final int DRIVE_FREE_LIMIT = 45; 
       public static final int DRIVE_STALL_LIMIT = 60; 
 
-      public static final PID STEER_VELOCITY_PID = new PID(0.0004,0,0.0001,0,0.0001);
-      public static final PID STEER_ANGLE_PID = new PID(15, 10, .1);//TODO 15!!!!, 10!!!!, .1!!!!!
-      public static final PID DRIVE_PID = new PID(0.0003,0.0000001,0.005,0,0.0002);
+      //PIDS
+      public static PID STEER_VELOCITY_PID = new PID(0.0004,0,0.0001,0,0.0001);
+      public static PID STEER_ANGLE_PID = new PID(15, 10, .1);//TODO 15!!!!, 10!!!!, .1!!!!! //TODO: find out how to live PID tune this
+      public static PID DRIVE_PID = new PID(0.0003,0.0000001,0.005,0,0.0002);
 
        
       //LEFT FRONT
