@@ -8,7 +8,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import frc.robot.CustomTypes.MotorData;
 import frc.robot.CustomTypes.PID;
-import frc.robot.Subsystems.Drive.Swerve.SwerveCanIDs;
 import frc.robot.Subsystems.Drive.Swerve.SwerveModuleLocations;
 
 public class Constants {
