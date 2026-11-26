@@ -78,7 +78,7 @@ public class SwerveDriveSubsystem extends SubsystemBase {
     
     //allow for live pid tuning for drive and steer velocity pids
     SwerveDriveConstants.DRIVE_PID.tunable("Drive PID",leftFrontSwerveModule.getDriveMotor(),leftRearSwerveModule.getDriveMotor(),rightFrontSwerveModule.getDriveMotor(),rightRearSwerveModule.getDriveMotor());
-    SwerveDriveConstants.STEER_VELOCITY_PID.tunable("Steer Velocity PID", leftFrontSwerveModule.getSteerMotor(),leftRearSwerveModule.getSteerMotor(),rightFrontSwerveModule.getSteerMotor(),rightRearSwerveModule.getSteerMotor());
+    SwerveDriveConstants.STEER_PID.tunable("Steer Velocity PID", leftFrontSwerveModule.getSteerMotor(),leftRearSwerveModule.getSteerMotor(),rightFrontSwerveModule.getSteerMotor(),rightRearSwerveModule.getSteerMotor());
   }
 
   /** Runs every loop: updates odometry and publishes the heading, positions, and pose. */
@@ -95,7 +95,7 @@ public class SwerveDriveSubsystem extends SubsystemBase {
 
     //Live PID tuning for drive and steer velocity pids
     SwerveDriveConstants.DRIVE_PID.updateLive();
-    SwerveDriveConstants.STEER_VELOCITY_PID.updateLive();
+    SwerveDriveConstants.STEER_PID.updateLive();
   }
 
   //#region Driving

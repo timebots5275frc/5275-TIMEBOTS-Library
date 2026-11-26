@@ -120,29 +120,35 @@ public class Constants {
       public static final int DRIVE_FREE_LIMIT = 45; 
       public static final int DRIVE_STALL_LIMIT = 60; 
 
+      /**
+       * Inverts the steer motor so that positive motor motion = counter-clockwise wheel rotation
+       * (the same direction the CANcoder and WPILib use). The old code achieved this by negating
+       * the velocity setpoint. If a wheel spins away from its target, flip this.
+       */
+      public static final boolean STEER_MOTOR_INVERTED = true;
+
       //PIDS
-      public static PID STEER_VELOCITY_PID = new PID(0.0004,0,0.0001,0,0.0001);
-      public static PID STEER_ANGLE_PID = new PID(15, 10, .1);//TODO 15!!!!, 10!!!!, .1!!!!! //TODO: find out how to live PID tune this
+      public static PID STEER_PID = new PID(0.0004,0,0.0001,0,0.0001);
       public static PID DRIVE_PID = new PID(0.0003,0.0000001,0.005,0,0.0002);
 
        
       //LEFT FRONT
       public static final MotorData LEFT_FRONT_DRIVE_MOTOR_DATA = new MotorData(10, DRIVE_FREE_LIMIT, DRIVE_STALL_LIMIT, DRIVE_PID);
-      public static final MotorData LEFT_FRONT_STEER_MOTOR_DATA = new MotorData(11, DRIVE_FREE_LIMIT, DRIVE_STALL_LIMIT, STEER_VELOCITY_PID);
+      public static final MotorData LEFT_FRONT_STEER_MOTOR_DATA = new MotorData(11, DRIVE_FREE_LIMIT, DRIVE_STALL_LIMIT, STEER_PID);
       public static final int LEFT_FRONT_STEER_ENCODER_ID = 12;
 
       //LEFT REAR
       public static final MotorData LEFT_REAR_DRIVE_MOTOR_DATA = new MotorData(20, DRIVE_FREE_LIMIT, DRIVE_STALL_LIMIT, DRIVE_PID);
-      public static final MotorData LEFT_REAR_STEER_MOTOR_DATA = new MotorData(21, DRIVE_FREE_LIMIT, DRIVE_STALL_LIMIT, STEER_VELOCITY_PID);
+      public static final MotorData LEFT_REAR_STEER_MOTOR_DATA = new MotorData(21, DRIVE_FREE_LIMIT, DRIVE_STALL_LIMIT, STEER_PID);
       public static final int LEFT_REAR_STEER_ENCODER_ID = 22;
       //RIGHT FRONT
       public static final MotorData RIGHT_FRONT_DRIVE_MOTOR_DATA = new MotorData(30, DRIVE_FREE_LIMIT, DRIVE_STALL_LIMIT, DRIVE_PID);
-      public static final MotorData RIGHT_FRONT_STEER_MOTOR_DATA = new MotorData(31, DRIVE_FREE_LIMIT, DRIVE_STALL_LIMIT, STEER_VELOCITY_PID);
+      public static final MotorData RIGHT_FRONT_STEER_MOTOR_DATA = new MotorData(31, DRIVE_FREE_LIMIT, DRIVE_STALL_LIMIT, STEER_PID);
       public static final int RIGHT_FRONT_STEER_ENCODER_ID = 32;
 
       //RIGHT REAR
       public static final MotorData RIGHT_REAR_DRIVE_MOTOR_DATA = new MotorData(40, DRIVE_FREE_LIMIT, DRIVE_STALL_LIMIT, DRIVE_PID);
-      public static final MotorData RIGHT_REAR_STEER_MOTOR_DATA = new MotorData(41, DRIVE_FREE_LIMIT, DRIVE_STALL_LIMIT, STEER_VELOCITY_PID);
+      public static final MotorData RIGHT_REAR_STEER_MOTOR_DATA = new MotorData(41, DRIVE_FREE_LIMIT, DRIVE_STALL_LIMIT, STEER_PID);
       public static final int RIGHT_REAR_STEER_ENCODER_ID = 42;
      
     }
