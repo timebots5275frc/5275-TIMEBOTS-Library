@@ -26,7 +26,6 @@ public class TankDriveCommand extends Command {
     this.input = input;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(tankDriveSubsystem);
-    addRequirements(input);
   }
 
   // Called when the command is initially scheduled.
@@ -43,7 +42,7 @@ public class TankDriveCommand extends Command {
     zRotation = input.getSquaredScaledDriveTurn();
 
     //xSpeed is used as a percentage of the maximum speed
-    tankDriveSubsystem.arcadeDrive(xSpeed * Constants.DriveConstants.MAX_X_SPEED, zRotation * Constants.DriveConstants.MAX_Z_ROTATION);
+    tankDriveSubsystem.arcadeDrive(xSpeed * Constants.TankDriveConstants.MAX_X_SPEED, zRotation * Constants.TankDriveConstants.MAX_Z_ROTATION);
 
   }
 

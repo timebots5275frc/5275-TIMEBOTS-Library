@@ -14,7 +14,7 @@ import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.TankDriveConstants;
 import frc.robot.CustomTypes.Helpers;
 
 
@@ -41,19 +41,19 @@ public class TankDriveSubsystem extends SubsystemBase {
 
   private void initMotors() {
     //instantaite leaders
-    var leftLeader  = Helpers.InstantiateMax(DriveConstants.LEFT_LEADER_DATA);
-    var rightLeader = Helpers.InstantiateMax(DriveConstants.RIGHT_LEADER_DATA); 
+    var leftLeader  = Helpers.InstantiateMax(TankDriveConstants.LEFT_LEADER_DATA);
+    var rightLeader = Helpers.InstantiateMax(TankDriveConstants.RIGHT_LEADER_DATA); 
     //set values
     leftLeaderMotor = leftLeader.getMotor();
     leftMotorController = leftLeader.getMotorController();
     rightLeaderMotor = rightLeader.getMotor();
     rightMotorController = rightLeader.getMotorController();
     // instantiate followers
-    leftFollowerMotor  = Helpers.InstantiateFollowerMax(DriveConstants.LEFT_FOLLOWER_DATA, leftLeaderMotor);
-    rightFollowerMotor = Helpers.InstantiateFollowerMax(DriveConstants.RIGHT_FOLLOWER_DATA, rightLeaderMotor);
+    leftFollowerMotor  = Helpers.InstantiateFollowerMax(TankDriveConstants.LEFT_FOLLOWER_DATA, leftLeaderMotor);
+    rightFollowerMotor = Helpers.InstantiateFollowerMax(TankDriveConstants.RIGHT_FOLLOWER_DATA, rightLeaderMotor);
 
     //make tunable
-    DriveConstants.DRIVE_PID.tunable("Drive", leftLeaderMotor, rightLeaderMotor);
+    TankDriveConstants.DRIVE_PID.tunable("Drive", leftLeaderMotor, rightLeaderMotor);
   }
 
   /**
@@ -68,14 +68,14 @@ public class TankDriveSubsystem extends SubsystemBase {
       zRotation *= -1; // reverse rotation
 
       //limit x speeds
-      xSpeed = Math.min(xSpeed, Constants.DriveConstants.MAX_X_SPEED);
-      xSpeed = Math.max(xSpeed, -Constants.DriveConstants.MAX_X_SPEED);
+      xSpeed = Math.min(xSpeed, Constants.TankDriveConstants.MAX_X_SPEED);
+      xSpeed = Math.max(xSpeed, -Constants.TankDriveConstants.MAX_X_SPEED);
       //limit z speeds
-      zRotation = Math.min(zRotation, Constants.DriveConstants.MAX_Z_ROTATION);
-      zRotation = Math.max(zRotation, -Constants.DriveConstants.MAX_Z_ROTATION);
+      zRotation = Math.min(zRotation, Constants.TankDriveConstants.MAX_Z_ROTATION);
+      zRotation = Math.max(zRotation, -Constants.TankDriveConstants.MAX_Z_ROTATION);
 
       //convert z rotation to meters per second
-      double zRotationMetersPerSecond = (Math.toRadians(zRotation) * (Constants.DriveConstants.TRACK_WIDTH / 2)) * -1;
+      double zRotationMetersPerSecond = (Math.toRadians(zRotation) * (Constants.TankDriveConstants.TRACK_WIDTH / 2)) * -1;
 
       //calculate left and right speeds
       double leftSpeed = xSpeed - zRotationMetersPerSecond;
@@ -103,8 +103,8 @@ public class TankDriveSubsystem extends SubsystemBase {
     * @param rightSpeed - meters per second
     */
   private void wheelDrive(double leftSpeed, double rightSpeed) {
-    double leftRPM = leftSpeed * DriveConstants.CONVERSION_FACTOR;
-    double rightRPM = rightSpeed * DriveConstants.CONVERSION_FACTOR;
+    double leftRPM = leftSpeed * TankDriveConstants.CONVERSION_FACTOR;
+    double rightRPM = rightSpeed * TankDriveConstants.CONVERSION_FACTOR;
 
     SmartDashboard.putNumber("right rpm goal", rightRPM);
     SmartDashboard.putNumber("left rpm goal", leftRPM);
@@ -114,8 +114,8 @@ public class TankDriveSubsystem extends SubsystemBase {
       clearIAccum();
     }
 
-    leftMotorController.setSetpoint(leftRPM * DriveConstants.FORWARD, ControlType.kVelocity);
-    rightMotorController.setSetpoint(rightRPM * DriveConstants.FORWARD, ControlType.kVelocity);
+    leftMotorController.setSetpoint(leftRPM * TankDriveConstants.FORWARD, ControlType.kVelocity);
+    rightMotorController.setSetpoint(rightRPM * TankDriveConstants.FORWARD, ControlType.kVelocity);
   }
 
 
@@ -127,7 +127,7 @@ public class TankDriveSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("right rpm", rightLeaderMotor.getEncoder().getVelocity());
     SmartDashboard.putNumber("left rpm", leftLeaderMotor.getEncoder().getVelocity());
 
-    DriveConstants.DRIVE_PID.updateLive();
+    TankDriveConstants.DRIVE_PID.updateLive();
     
   }
 
@@ -138,6 +138,15 @@ public class TankDriveSubsystem extends SubsystemBase {
   public void clearIAccum() {
     leftMotorController.setIAccum(0);
     rightMotorController.setIAccum(0);
+  }
+
+  // meters = motor rotations / gear ratio * wheel circumference
+  public double getLeftDistanceMeters() {
+    return leftLeaderMotor.getEncoder().getPosition() / TankDriveConstants.GEAR_RATIO * Math.PI * TankDriveConstants.WHEEL_DIAMETER;
+  } 
+
+  public double getRightDistanceMeters() {
+    return rightLeaderMotor.getEncoder().getPosition() / TankDriveConstants.GEAR_RATIO * Math.PI * TankDriveConstants.WHEEL_DIAMETER;
   }
 
 }

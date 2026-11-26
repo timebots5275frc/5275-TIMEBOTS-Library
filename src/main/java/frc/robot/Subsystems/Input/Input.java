@@ -45,6 +45,8 @@ public class Input extends SubsystemBase {
 
   private boolean usingJoystick = true;
 
+  private boolean fieldRelative = true;
+
   /**
    * Creates the input subsystem.
    *
@@ -209,6 +211,13 @@ public class Input extends SubsystemBase {
    * @return true if the active device is currently giving any move or turn input
    */
   public boolean hasDriveInput() { return usingJoystick ? hasJoystickInput() : hasControllerInput(); }
+
+  /**
+   * @return true if the active device is providing field-relative drive input
+   */
+  public boolean getFieldRelative() { return fieldRelative; }
+  public void setFieldRelative(boolean fieldRelative) { this.fieldRelative = fieldRelative; }
+  public void toggleFieldRelative() { this.fieldRelative = !this.fieldRelative; }
   //#endregion
 
   //#region Device-specific getters
