@@ -8,6 +8,8 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import frc.robot.CustomTypes.MotorData;
 import frc.robot.CustomTypes.PID;
+import frc.robot.Subsystems.Drive.Swerve.SwerveCanIDs;
+import frc.robot.Subsystems.Drive.Swerve.SwerveModuleLocations;
 
 public class Constants {
 
@@ -46,8 +48,8 @@ public class Constants {
 
     }
 
-    //#region Drive constants
-    public static class DriveConstants {
+    //#region Tank Drive constants
+    public static class TankDriveConstants {
         
       public static  PID DRIVE_PID = new PID(0.00015,0.0000005,0.00013,0); //TODO: PID TUNING
       public static final int FORWARD = 1; //flip sign to flip foward
@@ -71,8 +73,78 @@ public class Constants {
       public static final double TRACK_WIDTH = 14.5 * MathConstants.INCH_TO_METER; 
       public static final double GEAR_RATIO = 10.71; 
       public static final double WHEEL_DIAMETER = 6 * MathConstants.INCH_TO_METER; 
-      public static final double CONVERSION_FACTOR = (60 / (Math.PI * DriveConstants.WHEEL_DIAMETER)) * Constants.DriveConstants.GEAR_RATIO;// meters per second to rotations per minute
+      public static final double CONVERSION_FACTOR = (60 / (Math.PI * TankDriveConstants.WHEEL_DIAMETER)) * Constants.TankDriveConstants.GEAR_RATIO;// meters per second to rotations per minute
         
+    }
+
+    //#region Swerve Drive Constants
+    public static final class SwerveDriveConstants {
+      // Final Robot Constants
+      // 11.875 for 29" side (front)
+      // 12.375 for 30" side (side)
+      public static final SwerveModuleLocations Robot2025SwerveLocations = new SwerveModuleLocations(
+        11.875  * MathConstants.INCH_TO_METER, // LEFT_FRONT_WHEEL_X
+        12.375  * MathConstants.INCH_TO_METER,   // LEFT_FRONT_WHEEL_Y
+        11.875   * MathConstants.INCH_TO_METER, // RIGHT_FRONT_WHEEL_X
+        -12.375 * MathConstants.INCH_TO_METER,   // RIGHT_FRONT_WHEEL_Y
+        -11.875  * MathConstants.INCH_TO_METER, // RIGHT_REAR_WHEEL_X
+        -12.375 * MathConstants.INCH_TO_METER,   // RIGHT_REAR_WHEEL_Y
+        -11.875  * MathConstants.INCH_TO_METER, // LEFT_REAR_WHEEL_X
+        11.375  * MathConstants.INCH_TO_METER    // LEFT_REAR_WHEEL_Y
+      ); 
+      // in case the autofill doesnt show, the can ids go as follows.
+      // L/R F/B D/S M for left/right front/back drive/steer motor. it goes in order of lf,rf,lr,rr with drive first 
+  
+      
+      
+      public static final SwerveModuleLocations ROBOT_SWERVE_LOCATIONS = Robot2025SwerveLocations;
+
+      public static final double WHEEL_RADIUS = 2.0 * MathConstants.INCH_TO_METER; // meters * 0.98
+      public static final double WHEEL_CIRCUMFERENCE = 2.0 * Math.PI * WHEEL_RADIUS; // meters/revolution
+      public static final double MAX_DRIVE_SPEED = 5.5; // meters/second
+      public static final double MAX_STEER_RATE = .5; // rotations/second of a wheel for steer.
+      public static final double MAX_TWIST_RATE = .6 * 2.0 * Math.PI; // radians/second of the robot rotation.
+
+      public static final double CONTROLLER_TWIST_RATE = 2; // constant turn rate for using controller//TODO check
+
+      public static final int PIGEON_2_ID = 9; //TODO check
+
+      public static final double DRIVE_GEAR_RATIO = 1.0/5.9;//.169;
+      public static final double STEER_GEAR_RATIO = .05333333333;
+
+      public static final double AUTO_ODOMETRY_DRIVE_MIN_SPEED = .1;
+      public static final double AUTO_ODOMETRY_DRIVE_MAX_SPEED = 2;
+
+      public static final double AUTO_ODOMETRY_DRIVE_TARGET_ALLOWED_ERROR = .1; // in meters
+      public static final double AUTO_ODOMETRY_DRIVE_SLOWDOWN_DISTANCE = .6; // in meters
+
+      public static final int DRIVE_FREE_LIMIT = 45; 
+      public static final int DRIVE_STALL_LIMIT = 60; 
+
+      public static final PID STEER_VELOCITY_PID = new PID(0.0004,0,0.0001,0,0.0001);
+      public static final PID STEER_ANGLE_PID = new PID(15, 10, .1);//TODO 15!!!!, 10!!!!, .1!!!!!
+      public static final PID DRIVE_PID = new PID(0.0003,0.0000001,0.005,0,0.0002);
+
+       
+      //LEFT FRONT
+      public static final MotorData LEFT_FRONT_DRIVE_MOTOR_DATA = new MotorData(10, DRIVE_FREE_LIMIT, DRIVE_STALL_LIMIT, DRIVE_PID);
+      public static final MotorData LEFT_FRONT_STEER_MOTOR_DATA = new MotorData(11, DRIVE_FREE_LIMIT, DRIVE_STALL_LIMIT, STEER_VELOCITY_PID);
+      public static final int LEFT_FRONT_STEER_ENCODER_ID = 12;
+
+      //LEFT REAR
+      public static final MotorData LEFT_REAR_DRIVE_MOTOR_DATA = new MotorData(20, DRIVE_FREE_LIMIT, DRIVE_STALL_LIMIT, DRIVE_PID);
+      public static final MotorData LEFT_REAR_STEER_MOTOR_DATA = new MotorData(21, DRIVE_FREE_LIMIT, DRIVE_STALL_LIMIT, STEER_VELOCITY_PID);
+      public static final int LEFT_REAR_STEER_ENCODER_ID = 22;
+      //RIGHT FRONT
+      public static final MotorData RIGHT_FRONT_DRIVE_MOTOR_DATA = new MotorData(30, DRIVE_FREE_LIMIT, DRIVE_STALL_LIMIT, DRIVE_PID);
+      public static final MotorData RIGHT_FRONT_STEER_MOTOR_DATA = new MotorData(31, DRIVE_FREE_LIMIT, DRIVE_STALL_LIMIT, STEER_VELOCITY_PID);
+      public static final int RIGHT_FRONT_STEER_ENCODER_ID = 32;
+
+      //RIGHT REAR
+      public static final MotorData RIGHT_REAR_DRIVE_MOTOR_DATA = new MotorData(40, DRIVE_FREE_LIMIT, DRIVE_STALL_LIMIT, DRIVE_PID);
+      public static final MotorData RIGHT_REAR_STEER_MOTOR_DATA = new MotorData(41, DRIVE_FREE_LIMIT, DRIVE_STALL_LIMIT, STEER_VELOCITY_PID);
+      public static final int RIGHT_REAR_STEER_ENCODER_ID = 42;
+     
     }
 
     //#region Math Constants
@@ -110,7 +182,7 @@ public class Constants {
 
 
 
-
+      //#region AprilTag Field Constants
       public class AprilTagFieldConstants {
 
       public static final double FIELD_LENGTH = 16.54;
