@@ -140,4 +140,13 @@ public class TankDriveSubsystem extends SubsystemBase {
     rightMotorController.setIAccum(0);
   }
 
+  // meters = motor rotations / gear ratio * wheel circumference
+  public double getLeftDistanceMeters() {
+    return leftLeaderMotor.getEncoder().getPosition() / TankDriveConstants.GEAR_RATIO * Math.PI * TankDriveConstants.WHEEL_DIAMETER;
+  } 
+
+  public double getRightDistanceMeters() {
+    return rightLeaderMotor.getEncoder().getPosition() / TankDriveConstants.GEAR_RATIO * Math.PI * TankDriveConstants.WHEEL_DIAMETER;
+  }
+
 }

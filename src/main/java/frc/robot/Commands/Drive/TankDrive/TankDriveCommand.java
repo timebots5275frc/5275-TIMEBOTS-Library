@@ -26,7 +26,6 @@ public class TankDriveCommand extends Command {
     this.input = input;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(tankDriveSubsystem);
-    addRequirements(input);
   }
 
   // Called when the command is initially scheduled.

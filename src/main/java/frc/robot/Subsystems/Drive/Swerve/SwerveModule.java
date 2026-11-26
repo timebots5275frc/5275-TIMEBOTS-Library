@@ -1,5 +1,6 @@
 package frc.robot.Subsystems.Drive.Swerve;
 
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkMax;
@@ -145,7 +146,7 @@ public class SwerveModule {
         // Steering: the output of steerAnglePID becomes the steer motor RPM reference.
         // The sign is flipped to match the steer motor's direction.
         double steerMotorRpm = steerAnglePID.calculate(steerAngleDegrees, state.angle.getDegrees());
-        steerMotorVelocityPID.setSetpoint(-steerMotorRpm, SparkMax.ControlType.kVelocity);
+        steerMotorVelocityPID.setSetpoint(-steerMotorRpm, ControlType.kVelocity);
 
         // Driving: convert wheel speed (m/s) to motor RPM
         double driveMotorRpm = driveRpmFromSpeed(state.speedMetersPerSecond);
@@ -157,7 +158,7 @@ public class SwerveModule {
             SmartDashboard.putNumber(name + " DriveMotorSpeed", driveSpeed);
         }
 
-        driveMotorVelocityPID.setSetpoint(driveMotorRpm, SparkMax.ControlType.kVelocity);
+        driveMotorVelocityPID.setSetpoint(driveMotorRpm, ControlType.kVelocity);
     }
 
     // ------------------------------------------------------------------ Conversions

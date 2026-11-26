@@ -6,6 +6,7 @@ package frc.robot;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
@@ -13,14 +14,19 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.InputConstants;
+import frc.robot.Constants.TankDriveConstants;
 import frc.robot.Commands.SetState;
+import frc.robot.Commands.Drive.SwerveDrive.SwerveDriveCommand;
 import frc.robot.Commands.Drive.TankDrive.TankDriveCommand;
 import frc.robot.Subsystems.IntakeSubsystem;
 import frc.robot.Subsystems.IntakeSubsystem.IntakeState;
 import frc.robot.Subsystems.Drive.TankDriveSubsystem;
 import frc.robot.Subsystems.Drive.Swerve.SwerveDriveSubsystem;
+import frc.robot.Subsystems.GlobalPose.TankGlobalRobotPoseEstimatorSubsystem;
 import frc.robot.Subsystems.Input.Input;
 import frc.robot.Subsystems.Vision.VisionSubsystem;
 
@@ -38,6 +44,8 @@ public class RobotContainer {
   SwerveDriveSubsystem swerveDrive;
   VisionSubsystem visionSubsystem;
   SwerveDriveSubsystem swerveDriveSubsystem;
+
+  TankGlobalRobotPoseEstimatorSubsystem tankGlobalPoseEstimator;
   
   Pigeon2 gyro;
   Joystick joystick;
@@ -64,6 +72,10 @@ public class RobotContainer {
     visionSubsystem = new VisionSubsystem(gyro);
     
 
+    //Pose Estimators
+    tankGlobalPoseEstimator = new TankGlobalRobotPoseEstimatorSubsystem( visionSubsystem, gyro, new DifferentialDriveKinematics(TankDriveConstants.TRACK_WIDTH), () -> tankDriveSubsystem.getLeftDistanceMeters(), () -> tankDriveSubsystem.getRightDistanceMeters());
+    
+    
     // Configure the trigger bindings
     configureBindings();
   }
@@ -89,8 +101,12 @@ public class RobotContainer {
     //lowk could just use inline commands, but setstate might be easier to learn instead of lambdas
     new JoystickButton(buttonBoard, 0).onTrue(Commands.runOnce(()-> intakeSubsystem.setState(IntakeState.INTAKE), intakeSubsystem));
 
-    //DRIVE 
+    //TANK DRIVE 
     tankDriveSubsystem.setDefaultCommand(new TankDriveCommand(input, tankDriveSubsystem));
+
+    //SWERVE DRIVE
+    swerveDriveSubsystem.setDefaultCommand(new SwerveDriveCommand(swerveDriveSubsystem, input));
+    new JoystickButton(buttonBoard,0).toggleOnTrue(Commands.runOnce(() -> input.toggleFieldRelative())); //toggle field relative driving
 
     //XBOX Controller Buttons 
     new JoystickButton(xboxController, 1).onTrue(Commands.runOnce(()-> input.incrementControllerTranslationSpeed()));

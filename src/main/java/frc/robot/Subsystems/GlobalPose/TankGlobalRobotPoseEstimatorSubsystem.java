@@ -20,12 +20,7 @@ public class TankGlobalRobotPoseEstimatorSubsystem extends GlobalRobotPoseSubsys
    * @param leftMeters  total left wheel distance traveled, in meters
    * @param rightMeters total right wheel distance traveled, in meters
    */
-  public TankGlobalRobotPoseEstimatorSubsystem(
-      VisionSubsystem vision,
-      Pigeon2 gyro,
-      DifferentialDriveKinematics kinematics,
-      DoubleSupplier leftMeters,
-      DoubleSupplier rightMeters) {
+  public TankGlobalRobotPoseEstimatorSubsystem( VisionSubsystem vision, Pigeon2 gyro, DifferentialDriveKinematics kinematics, DoubleSupplier leftMeters, DoubleSupplier rightMeters) {
     super(
         vision,
         gyro,
