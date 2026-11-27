@@ -1,11 +1,8 @@
 package frc.robot.Subsystems.Drive.Swerve;
 
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -30,7 +27,7 @@ import frc.robot.CustomTypes.MotorData;
  *       once at startup (and on {@link #resyncSteerEncoder()}) to seed that encoder with the
  *       wheel's true angle. Position wrapping makes the SPARK take the shortest way around.</li>
  *   <li><b>Driving:</b> a single velocity PID on the SPARK Flex
- *       ({@link #driveMotorVelocityPID}), fed with the motor RPM that corresponds to
+ *       ({@link #driveMotorController}), fed with the motor RPM that corresponds to
  *       the desired wheel speed.</li>
  * </ul>
  *
@@ -51,10 +48,10 @@ public class SwerveModule {
     // ------------------------------------------------------------------ Controllers
 
     /** Steering loop (SPARK MAX): holds a wheel angle in degrees using the built-in encoder. */
-    private SparkClosedLoopController steerMotorPositionPID;
+    private SparkClosedLoopController steerMotorPositionController;
 
     /** Drive loop (SPARK Flex): holds the drive motor RPM. */
-    private SparkClosedLoopController driveMotorVelocityPID;
+    private SparkClosedLoopController driveMotorController;
 
     // ------------------------------------------------------------------ Setup
 
@@ -73,41 +70,23 @@ public class SwerveModule {
         // Drive motor + its onboard closed-loop controller
         var drive = Helpers.InstantiateFlex(driveMotorData);
         driveMotor = drive.getMotor();
-        driveMotorVelocityPID = drive.getMotorController();
+        driveMotorController = drive.getMotorController();
 
-        // Steer motor + its onboard closed-loop controller
-        var steer = Helpers.InstantiateMax(steerMotorData);
+        // Steer motor + its onboard closed-loop controller, configured for position control in
+        // WHEEL DEGREES. STEER_GEAR_RATIO is wheel rotations per motor rotation (like DRIVE_GEAR_RATIO),
+        // so degrees per motor rotation = 360 * ratio. Gains come from steerMotorData's PID.
+        var steer = Helpers.InstantiateMaxPosition(
+            steerMotorData,
+            360.0 * SwerveDriveConstants.STEER_GEAR_RATIO,
+            SwerveDriveConstants.STEER_MOTOR_INVERTED,
+            -180, 180);
         steerMotor = steer.getMotor();
-        steerMotorPositionPID = steer.getMotorController();
-
-        configureSteerMotor();
+        steerMotorPositionController = steer.getMotorController();
 
         // Wait (briefly) for the CANcoder's first reading, then seed the steer motor's encoder with it.
         // Without the wait, a not-yet-published reading of 0 would start every wheel misaligned.
         steerAngleEncoder.getAbsolutePosition().waitForUpdate(0.25);
         resyncSteerEncoder();
-    }
-
-    /**
-     * Applies the position-control settings on top of whatever the helper already configured
-     * (current limits, etc. are left alone via kNoResetSafeParameters).
-     */
-    private void configureSteerMotor() { //TODO: make this into a helper
-        SparkMaxConfig config = new SparkMaxConfig();
-
-        config.inverted(SwerveDriveConstants.STEER_MOTOR_INVERTED);
-
-        // Make the built-in encoder report WHEEL DEGREES instead of motor rotations
-        config.encoder.positionConversionFactor(360.0 / SwerveDriveConstants.STEER_GEAR_RATIO);
-
-        // Feedback is the primary (built-in) encoder, which is the default for a brushless motor
-        config.closedLoop
-            .pid(SwerveDriveConstants.STEER_PID.p,SwerveDriveConstants.STEER_PID.i, SwerveDriveConstants.STEER_PID.d)// is this necsascary if already set through the helpers
-            .outputRange(-1, 1)
-            .positionWrappingEnabled(true)          // take the shortest path around the circle
-            .positionWrappingInputRange(-180, 180); // wheel angle range, in degrees
-
-        steerMotor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
     }
 
     /**
@@ -175,7 +154,7 @@ public class SwerveModule {
         state.optimize(currentAngle);
 
         // Steering: command the wheel angle (degrees) directly. The SPARK runs the position PID.
-        steerMotorPositionPID.setSetpoint(state.angle.getDegrees(), SparkMax.ControlType.kPosition);
+        steerMotorPositionController.setSetpoint(state.angle.getDegrees(), SparkMax.ControlType.kPosition);
 
         // Driving: convert wheel speed (m/s) to motor RPM
         double driveMotorRpm = driveRpmFromSpeed(state.speedMetersPerSecond);
@@ -189,7 +168,7 @@ public class SwerveModule {
             SmartDashboard.putNumber(name + " SteerActualDeg", currentAngle.getDegrees());
         }
 
-        driveMotorVelocityPID.setSetpoint(driveMotorRpm, SparkMax.ControlType.kVelocity);
+        driveMotorController.setSetpoint(driveMotorRpm, SparkMax.ControlType.kVelocity);
     }
 
     // ------------------------------------------------------------------ Conversions

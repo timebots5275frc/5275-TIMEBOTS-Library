@@ -35,6 +35,74 @@ public class Helpers {
         return new MotorAndController<SparkFlex>(motor, motor.getClosedLoopController());
     }
 
+    /**
+     * Creates and fully configures a SparkMax for POSITION control in custom units (for example
+     * swerve steering in wheel degrees). Everything InstantiateMax does (ID, current limits, idle
+     * mode, gains from the MotorData's PID) plus the position-specific settings, applied in a
+     * single configure call.
+     *
+     * Usage:  var m = Helpers.InstantiateMaxPosition(steerData, 360.0 * STEER_GEAR_RATIO, true, -180, 180);
+     *         m.getMotorController().setSetpoint(90, SparkMax.ControlType.kPosition);
+     *
+     * @param data                     ID, current limits, and PID gains (gains must be POSITION gains)
+     * @param positionConversionFactor units per motor rotation (e.g. wheel degrees per motor rotation)
+     * @param inverted                 whether to invert the motor (also flips the built-in encoder's sign)
+     * @param wrapMin                  lowest value of the wrapping range, in the converted units (e.g. -180)
+     * @param wrapMax                  highest value of the wrapping range, in the converted units (e.g. 180)
+     */
+    public static MotorAndController<SparkMax> InstantiateMaxPosition(MotorData data, double positionConversionFactor, boolean inverted, double wrapMin, double wrapMax) {
+        SparkMax motor = new SparkMax(data.getID(), SparkLowLevel.MotorType.kBrushless);
+
+        SparkMaxConfig config = data.applyTo(new SparkMaxConfig());
+        config.inverted(inverted);
+
+        // Make the built-in encoder report the converted units instead of motor rotations
+        config.encoder.positionConversionFactor(positionConversionFactor);
+
+        // Feedback is the primary (built-in) encoder, which is the default for a brushless motor
+        config.closedLoop
+            .outputRange(-1, 1)
+            .positionWrappingEnabled(true)             // take the shortest path around the circle
+            .positionWrappingInputRange(wrapMin, wrapMax);
+
+        motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        return new MotorAndController<SparkMax>(motor, motor.getClosedLoopController());
+    }
+
+    /**
+     * Creates and fully configures a SparkMax for POSITION control in custom units (for example
+     * swerve steering in wheel degrees). Everything InstantiateMax does (ID, current limits, idle
+     * mode, gains from the MotorData's PID) plus the position-specific settings, applied in a
+     * single configure call.
+     *
+     * Usage:  var m = Helpers.InstantiateMaxPosition(steerData, 360.0 * STEER_GEAR_RATIO, true, -180, 180);
+     *         m.getMotorController().setSetpoint(90, SparkMax.ControlType.kPosition);
+     *
+     * @param data                     ID, current limits, and PID gains (gains must be POSITION gains)
+     * @param positionConversionFactor units per motor rotation (e.g. wheel degrees per motor rotation)
+     * @param inverted                 whether to invert the motor (also flips the built-in encoder's sign)
+     * @param wrapMin                  lowest value of the wrapping range, in the converted units (e.g. -180)
+     * @param wrapMax                  highest value of the wrapping range, in the converted units (e.g. 180)
+     */
+    public static MotorAndController<SparkFlex> InstantiateFlexPosition(MotorData data, double positionConversionFactor, boolean inverted, double wrapMin, double wrapMax) {
+        SparkFlex motor = new SparkFlex(data.getID(), SparkLowLevel.MotorType.kBrushless);
+
+        SparkFlexConfig config = data.applyTo(new SparkFlexConfig());
+        config.inverted(inverted);
+
+        // Make the built-in encoder report the converted units instead of motor rotations
+        config.encoder.positionConversionFactor(positionConversionFactor);
+
+        // Feedback is the primary (built-in) encoder, which is the default for a brushless motor
+        config.closedLoop
+            .outputRange(-1, 1)
+            .positionWrappingEnabled(true)             // take the shortest path around the circle
+            .positionWrappingInputRange(wrapMin, wrapMax);
+
+        motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        return new MotorAndController<SparkFlex>(motor, motor.getClosedLoopController());
+    }
+
     /** Creates a SparkMax that follows leader. Leader is NOT touched. */
     public static SparkMax InstantiateFollowerMax(MotorData data, SparkMax leader) {
         SparkMax motor = new SparkMax(data.getID(), SparkLowLevel.MotorType.kBrushless);
